@@ -1,0 +1,23 @@
+{
+    "name": "school_planner",
+    "version": "1.0.0",
+    "description": "",
+    "main": "dist/index.js",
+    "scripts": {
+        "build": "tsc",
+        "serve": "http-server --proxy http://localhost:8080?",
+        "dev": "nodemon --watch src/ -e ts --exec \"pnpm run build\""
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "devDependencies": {
+        "typescript": "^4.9.4"
+    },
+    "dependencies": {
+        "@types/node": "^18.11.18",
+        "http-server": "^14.1.1",
+        "nodemon": "^2.0.20",
+        "ts-node-dev": "^2.0.0"
+    }
+}

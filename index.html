@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Timeline Planner</title>
+        <link rel="stylesheet" href="style.css" />
+        <link
+            href="https://fonts.googleapis.com/css2?family=Open+Sans&display=swap"
+            rel="stylesheet"
+        />
+    </head>
+    <body>
+        <div class="wrapper">
+            <div class="flex-element" id="timeline-wrapper">
+                <ul id="timeline" class="timeline">
+                    <h2 id="noelem">You have no tasks</h2>
+                </ul>
+            </div>
+            <div class="flex-element">
+                <div class="form">
+                    <div>
+                        <h1>General</h1>
+                        <form>
+                            <label>Timetable name</label>
+                            <input type="text" id="GTimetableName" />
+                            <br />
+                            <br />
+                            <label>Day</label>
+                            <select id="GDay"></select>
+                        </form>
+                    </div>
+                </div>
+                <div class="form">
+                    <div>
+                        <h1>Time slots</h1>
+                        <form onsubmit="return addTimeSlot(event)">
+                            <label>Start time</label>
+                            <input
+                                required
+                                type="time"
+                                id="TSStart"
+                                value="03:34"
+                            />
+                            <br />
+                            <label>End time</label>
+                            <input
+                                required
+                                type="time"
+                                id="TSEnd"
+                                value="03:35"
+                            />
+                            <span
+                                id="TSTimeError"
+                                style="display: none"
+                                class="form-error"
+                            ></span>
+                            <br class="RemoveIfError" />
+                            <br />
+                            <label>Name </label>
+                            <input
+                                required
+                                type="text"
+                                id="TSName"
+                                value="HELLO WORLD"
+                            />
+                            <br /><br />
+                            <input type="submit" />
+                        </form>
+                    </div>
+                </div>
+
+                <div class="form">
+                    <div>
+                        <h1>Tasks</h1>
+                        <form onsubmit="addTask(event)">
+                            <label>Time slot </label>
+                            <select id="TTimeSlot" required></select>
+                            <br />
+                            <br />
+                            <label>Length </label
+                            ><input
+                                required
+                                type="number"
+                                min="0"
+                                max="4"
+                                step="1"
+                                id="TLength"
+                                value="1"
+                            />
+                            <input
+                                required
+                                type="number"
+                                min="0"
+                                max="59"
+                                step="5"
+                                id="TLengthMins"
+                                value="0"
+                            />
+                            <br />
+                            <br />
+                            <label>Name</label>
+                            <input
+                                required
+                                type="text"
+                                id="TName"
+                                value="MY NAME IS"
+                                placeholder="enter something"
+                            />
+                            <br /><br />
+                            <input type="submit" />
+                        </form>
+                    </div>
+                </div>
+                <div class="form">
+                    <button id="print-button">Print</button>
+                    <button id="save-buton">Save</button>
+                    <button id="load-button">Load</button>
+                    <button id="clear-button">Clear</button>
+                </div>
+            </div>
+        </div>
+        <script src="dist/index.js"></script>
+    </body>
+</html>

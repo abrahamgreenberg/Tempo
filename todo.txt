@@ -1,0 +1,4 @@
+1. Style it properly
+2. Render the times
+3. Figure out printing
+4. Style the print view
