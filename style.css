@@ -101,10 +101,3 @@ h1 {
 .task-error {
     background-color: var(--error-color);
 }
-
-/* TODO::
-    - Format buttons and form elements
-    - Format invalid tasks
-    - Add task times 
-    - Set default values & times, and set max times
-*/

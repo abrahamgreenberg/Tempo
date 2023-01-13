@@ -330,7 +330,6 @@ const handleDragEnd = (event: DragEvent) => {
             timeslotTasks[from.order].order = to.order - 1;
         }
     }
-    // TODO: Handle if task moves to different time slot
     renderList();
 };
 
@@ -343,7 +342,6 @@ const printView = async () => {
     if (!newWindow) return;
 
     const colors = ["red", "green", "orange", "blue", "purple"];
-    // TODO: "Subway theming" https://chat.openai.com/chat/8698b809-f201-4deb-a995-6082d7034f4f
     let fragment = newWindow.document.createDocumentFragment();
 
     let timeslotsFragment = newWindow.document.createDocumentFragment();
@@ -415,11 +413,3 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!button) return;
     button.addEventListener("click", printView);
 });
-
-/* 
-    TODO:
-    - Add other options, like name for the timetable
-    - Add checkboxes in the print view
-    - Add saving and loading configs
-    - Add option to clear configs
-*/

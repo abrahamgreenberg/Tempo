@@ -1,4 +1,8 @@
-1. Style it properly
-2. Render the times
-3. Figure out printing
-4. Style the print view
+1. Add other options, like name for the timetable
+2. Add checkboxes in the print view
+3. Add saving and loading configs
+4. Add option to clear current configs
+5. Add deleting and editing
+6. Add dragging to other timeslots
+7. Change default dragging cursor
+8. Find a better colour pallet
