@@ -1,0 +1,70 @@
+html,
+body {
+    font-family: "Open Sans", sans-serif;
+    font-size: 104%;
+}
+
+ol {
+    list-style-type: none;
+    padding-left: none;
+}
+
+.ul-number {
+    color: white;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    display: inline-flex;
+}
+
+.timeline-content,
+h3,
+h2,
+.timeline-time {
+    display: inline-block;
+}
+
+.purple {
+    background-color: purple;
+}
+
+.blue {
+    background-color: blue;
+}
+
+.green {
+    background-color: green;
+}
+
+.orange {
+    background-color: orange;
+}
+
+.red {
+    background-color: red;
+}
+
+@media print {
+    .purple {
+        background-color: purple;
+    }
+
+    .blue {
+        background-color: blue;
+    }
+
+    .green {
+        background-color: green;
+    }
+
+    .orange {
+        background-color: orange;
+    }
+
+    .red {
+        background-color: red;
+    }
+}

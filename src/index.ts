@@ -3,6 +3,7 @@ interface TimeSlot {
     name: string;
     start: number;
     end: number;
+    finalEnd: number;
 }
 
 interface Task {
@@ -127,6 +128,7 @@ const addTimeSlot = (e: SubmitEvent & { target: HTMLFormElement }) => {
         name: e.target.elements.TSName.value,
         start,
         end,
+        finalEnd: end,
     });
 
     timeSlots = timeSlots.sort((a, b) => {
@@ -186,23 +188,47 @@ const addTask = (e: SubmitEvent & { target: HTMLFormElement }) => {
     return true;
 };
 
-const renderList = () => {
+const replaceStrings = (string: string, ...values: [string, string][]) => {
+    for (const value of values) {
+        string = string.replace(
+            new RegExp(
+                `%${value[0].toUpperCase().replace(/[ +]/g, "_")}%`,
+                "g"
+            ),
+            value[1]
+        );
+    }
+    return string;
+};
+
+interface renderTemplate {
+    timeslotInfo?: string;
+    taskInfo: string;
+}
+
+type taskCallBack = (item: HTMLLIElement) => void;
+
+const getList = (template: renderTemplate, taskCallBack?: taskCallBack) => {
     let fragment = document.createDocumentFragment();
+
     for (const timeSlot of timeSlots) {
-        const newTimeSlot = document.createElement("li");
-        addClass(newTimeSlot, "timeline-slot");
-        newTimeSlot.id = `timeslot-${timeSlot.id}`;
+        if (template.timeslotInfo) {
+            const newTimeSlot = document.createElement("li");
+            addClass(newTimeSlot, "timeline-slot");
+            newTimeSlot.id = `timeslot-${timeSlot.id}`;
 
-        const newTimeSlotInfo = document.createElement("div");
-        addClass(newTimeSlotInfo, "timeslot-content");
-        newTimeSlotInfo.innerHTML = `<h2>${
-            timeSlot.name
-        }</h2>\n<div class="timeline-time">${intToStime(
-            timeSlot.start
-        )} - ${intToStime(timeSlot.end)}</div>`;
+            const newTimeSlotInfo = document.createElement("div");
+            addClass(newTimeSlotInfo, "timeslot-content");
+            newTimeSlotInfo.innerHTML = replaceStrings(
+                template.timeslotInfo,
+                ["name", timeSlot.name],
+                ["start", intToStime(timeSlot.start)],
+                ["end", intToStime(timeSlot.end)]
+            );
 
-        newTimeSlot.appendChild(newTimeSlotInfo);
-        fragment.appendChild(newTimeSlot);
+            newTimeSlot.appendChild(newTimeSlotInfo);
+            fragment.appendChild(newTimeSlot);
+        }
 
         let timeslotTasks = getTimeslotTasks(timeSlot.id);
         timeslotTasks = timeslotTasks.sort((a, b) => {
@@ -218,27 +244,46 @@ const renderList = () => {
         for (const task of timeslotTasks) {
             const newTask = document.createElement("li");
             addClass(newTask, "timeline-task");
-            newTask.draggable = true;
+            if (taskCallBack) taskCallBack(newTask);
             newTask.id = `task-${task.id}`;
-            newTask.addEventListener("dragend", handleDragEnd);
 
             const newTaskInfo = document.createElement("div");
             addClass(newTaskInfo, "timeline-content");
-            newTaskInfo.innerHTML = `<h3>${
-                task.name
-            }</h3>\n<div class="timeline-time">${intToStime(
-                currentTime
-            )} - ${intToStime((currentTime += task.length))}</div>`;
+            newTaskInfo.innerHTML = replaceStrings(
+                template.taskInfo,
+                ["name", task.name],
+                ["start", intToStime(currentTime)],
+                ["end", intToStime((currentTime += task.length))]
+            );
 
             if (currentTime > timeSlot.end) addClass(newTask, "task-error");
             newTask.appendChild(newTaskInfo);
             fragment.appendChild(newTask);
         }
+
+        timeSlots[timeSlot.id].finalEnd = currentTime;
     }
+
+    return fragment;
+};
+
+const renderList = () => {
+    const list = getList(
+        {
+            timeslotInfo:
+                '<h2>%NAME%</h2>\n<div class="timeline-time">%START% - %END%</div>',
+            taskInfo:
+                '<h3>%NAME%</h3>\n<div class="timeline-time">%START% - %END%</div>',
+        },
+        (task) => {
+            task.addEventListener("dragend", handleDragEnd);
+            task.draggable = true;
+        }
+    );
 
     const timeline = document.getElementById("timeline");
     if (!timeline) return;
-    timeline.replaceChildren(fragment);
+    timeline.replaceChildren(list);
     if (!timeline.parentElement) return;
     timeline.parentElement.style.display = "block";
 };
@@ -289,30 +334,92 @@ const handleDragEnd = (event: DragEvent) => {
     renderList();
 };
 
-// TODO: Refactor: make get list its own function, and generate a list, using different templates
+const randomElement = <T>(array: T[]) => {
+    return array[Math.floor(Math.random() * array.length)];
+};
+
+const printView = async () => {
+    const newWindow = window.open();
+    if (!newWindow) return;
+
+    const colors = ["red", "green", "orange", "blue", "purple"];
+    // TODO: "Subway theming" https://chat.openai.com/chat/8698b809-f201-4deb-a995-6082d7034f4f
+    let fragment = newWindow.document.createDocumentFragment();
+
+    let timeslotsFragment = newWindow.document.createDocumentFragment();
+
+    let i = 0;
+
+    for (const timeSlot of timeSlots) {
+        const newTimeSlot = newWindow.document.createElement("li");
+        addClass(newTimeSlot, "timeline-slot");
+        newTimeSlot.id = `timeslot-${timeSlot.id}`;
+
+        const newTimeSlotInfo = newWindow.document.createElement("div");
+        addClass(newTimeSlotInfo, "timeslot-content");
+        newTimeSlotInfo.innerHTML = replaceStrings(
+            '<div class="timeline-time">&nbsp;%START% - %END%</div><h2>&nbsp;&nbsp;%NAME%</h2>',
+            ["name", timeSlot.name],
+            ["start", intToStime(timeSlot.start)],
+            ["end", intToStime(timeSlot.finalEnd)]
+        );
+
+        const letter = newWindow.document.createElement("div");
+        letter.innerHTML = String.fromCharCode("A".charCodeAt(0) + i++);
+
+        letter.classList.add("ul-number", randomElement(colors));
+        newTimeSlotInfo.insertBefore(letter, newTimeSlotInfo.firstChild);
+
+        newTimeSlot.appendChild(newTimeSlotInfo);
+        timeslotsFragment.appendChild(newTimeSlot);
+    }
+
+    const documentTimeSlots = newWindow.document.createElement("ol");
+    documentTimeSlots.type = "A";
+    documentTimeSlots.replaceChildren(timeslotsFragment);
+
+    fragment.appendChild(documentTimeSlots);
+
+    newWindow.document.title = "Print timetable";
+
+    i = 0;
+    const listItems = getList(
+        {
+            taskInfo:
+                '<div class="timeline-time">&nbsp;%START% - %END%</div><h3>&nbsp;&nbsp;%NAME%</h3>',
+        },
+        (task) => {
+            const number = newWindow.document.createElement("div");
+            number.innerHTML = (++i).toString();
+            number.classList.add("ul-number", randomElement(colors));
+            task.insertBefore(number, task.firstChild);
+        }
+    );
+
+    const css = await fetch("../print.css");
+    const style = newWindow.document.createElement("style");
+    style.innerHTML = await css.text();
+    newWindow.document.head.appendChild(style);
+
+    const list = newWindow.document.createElement("ol");
+    list.replaceChildren(listItems);
+    fragment.appendChild(list);
+
+    newWindow.document.body.replaceChildren(fragment);
+
+    newWindow.print();
+};
+
 document.addEventListener("DOMContentLoaded", () => {
     const button = document.getElementById("print-button");
     if (!button) return;
-    button.addEventListener("click", () => {
-        const newWindow = window.open();
-        if (!newWindow) return;
-        newWindow.document.title = "Print timetable";
-        newWindow.document.body.innerHTML = "<h2>Hello world</h2>";
-        newWindow.print();
-    });
+    button.addEventListener("click", printView);
 });
 
 /* 
     TODO:
     - Add other options, like name for the timetable
+    - Add checkboxes in the print view
     - Add saving and loading configs
     - Add option to clear configs
-*/
-
-/* TODO: To get it working
-    - Refactor to allow render to render elements with a given template
-    - Figure out how to have separate style sheets for print view
-    - Style print view
-    & we're done for tonight!
-
 */
