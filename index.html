@@ -19,13 +19,13 @@
                 <div class="form">
                     <div>
                         <h1>General</h1>
-                        <form>
+                        <form id="name">
                             <label>Timetable name</label>
-                            <input type="text" id="GTimetableName" />
-                            <br />
-                            <br />
+                            <input type="text" id="GTimetableName" required />
+                        </form>
+                        <form id="day">
                             <label>Day</label>
-                            <select id="GDay"></select>
+                            <select id="GDay" required></select>
                         </form>
                     </div>
                 </div>
@@ -112,8 +112,9 @@
                 </div>
                 <div class="form">
                     <button id="print-button">Print</button>
-                    <button id="save-buton">Save</button>
-                    <button id="load-button">Load</button>
+                    <button id="save-button">Save</button>
+                    <input type="file" id="load-button" style="display: none" />
+                    <label for="load-button">Select file</label>
                     <button id="clear-button">Clear</button>
                 </div>
             </div>

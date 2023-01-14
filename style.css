@@ -60,6 +60,7 @@ body,
     padding: 1em;
     border-radius: var(--base-radius);
     background-color: var(--task-color);
+    cursor: grab;
 }
 
 #timeline {
