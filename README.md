@@ -37,5 +37,6 @@ A project that automatically generates my plan for the next day
 1.  Properly do editing tasks
 1.  Copying tasks
 1.  Change save name to the name of the timetable
+1.  Auto close print view when printed
 1.  FUTURE: Themes
     <br />-> Would it be possible to do theme previews?
