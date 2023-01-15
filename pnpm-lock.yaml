@@ -2,6 +2,7 @@ lockfileVersion: 5.4
 
 specifiers:
   '@types/node': ^18.11.18
+  bootstrap-icons: ^1.10.3
   http-server: ^14.1.1
   nodemon: ^2.0.20
   ts-node-dev: ^2.0.0
@@ -9,6 +10,7 @@ specifiers:
 
 dependencies:
   '@types/node': 18.11.18
+  bootstrap-icons: 1.10.3
   http-server: 14.1.1
   nodemon: 2.0.20
   ts-node-dev: 2.0.0_awa2wsr5thmg3i7jqycphctjfq
@@ -123,6 +125,10 @@ packages:
   /binary-extensions/2.2.0:
     resolution: {integrity: sha512-jDctJ/IVQbZoJykoeHbhXpOlNBqGNcwXJKJog42E5HDPUwQTSdjCHdihjj0DlnheQ7blbT6dHOafNAiS8ooQKA==}
     engines: {node: '>=8'}
+    dev: false
+
+  /bootstrap-icons/1.10.3:
+    resolution: {integrity: sha512-7Qvj0j0idEm/DdX9Q0CpxAnJYqBCFCiUI6qzSPYfERMcokVuV9Mdm/AJiVZI8+Gawe4h/l6zFcOzvV7oXCZArw==}
     dev: false
 
   /brace-expansion/1.1.11:
