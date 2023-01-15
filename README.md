@@ -16,7 +16,8 @@ A project that automatically generates my plan for the next day
     ~~<br/>-> for deleting, instead of actually deleting, just use a property of the instance~~
 1.  ~~Change default dragging cursor~~
 1.  Find a better colour pallet and layout
-    -> https://coolors.co/palette/2b2d42-8d99ae-edf2f4-ef233c-d90429
+    -> https://coolors.co/2b2d42-8d99ae-edf2f4-e6c260-ef233c-d90429
+    -> https://www.figma.com/file/fZKNDonKnhY0Uk2dHYmIwc/Untitled?node-id=0%3A1&t=WC7003374GTmoHxB-0
 1.  Presets
 1.  Fix bug in removing values from dropdown when clearing lists
 
@@ -38,5 +39,6 @@ A project that automatically generates my plan for the next day
 1.  Copying tasks
 1.  Change save name to the name of the timetable
 1.  Auto close print view when printed
+1.  Fix bug where you cant drag items on timeslots
 1.  FUTURE: Themes
     <br />-> Would it be possible to do theme previews?
