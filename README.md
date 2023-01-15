@@ -25,12 +25,10 @@ A project that automatically generates my plan for the next day
 
     ```js
     const now = new Date();
-    let day = now.getDay() + 1;
+    let day = now.getDay();
 
-    if (day === 1) {
-        if (now.getHours() <= 18) day = 0;
-        else day = 1;
-    } else if (day === 7) day = 0;
+    if (now.getHours() >= 18) day++;
+    if (day === 7) day = 0;
 
     console.log(day);
     ```
@@ -40,5 +38,6 @@ A project that automatically generates my plan for the next day
 1.  Change save name to the name of the timetable
 1.  Auto close print view when printed
 1.  Fix bug where you cant drag items on timeslots
+1.  Implement webpack
 1.  FUTURE: Themes
     <br />-> Would it be possible to do theme previews?
