@@ -76,6 +76,10 @@ let timeSlots: TimeSlot[] = [];
 let allTasks: Task[] = [];
 const taskTimeslots: Map<number, number[]> = new Map();
 
+const icon = (icon: string) => {
+    return `<i class="bi bi-${icon}"></i>`;
+};
+
 const displayError = (elementID: string, message: string) => {
     let element = document.getElementById(elementID);
     if (element) {
@@ -108,12 +112,16 @@ const stimeToInt = (string: string) => {
 };
 
 const intToStime = (int: number) => {
+    const doubleDigits = (number: number) => {
+        return number.toLocaleString("en-US", {
+            minimumIntegerDigits: 2,
+            useGrouping: false,
+        });
+    };
+
     const minutes = int % 60;
     const hours = (int - minutes) / 60;
-    return `${hours}:${minutes.toLocaleString("en-US", {
-        minimumIntegerDigits: 2,
-        useGrouping: false,
-    })}`;
+    return `${doubleDigits(hours)}:${doubleDigits(minutes)}`;
 };
 
 const getTimeslotTasks = (timeslotId: number) => {
@@ -124,11 +132,16 @@ const getTimeslotTasks = (timeslotId: number) => {
     return returnArray;
 };
 
-const checkForClass = (element: Element, className: string) => {
+const containsCommonElement = <T>(array1: T[], array2: T[]) => {
+    for (const i of array1) for (const j of array2) if (i === j) return true;
+    return false;
+};
+
+const checkForClass = (element: Element, ...classNames: string[]) => {
     let i = 0;
 
     while (element.parentNode) {
-        if (element.classList.contains(className)) return i;
+        if (containsCommonElement([...element.classList], classNames)) return i;
         i++;
         element = element.parentNode as HTMLElement;
     }
@@ -169,6 +182,15 @@ const getDay = (id: number) => {
         "",
     ];
     return days[id];
+};
+
+const addIcons = (elem: HTMLElement, ...iconIds: string[]) => {
+    const icons = iconIds
+        .map((iconId) => {
+            return icon(iconId);
+        })
+        .join();
+    elem.innerHTML = `${icons}&nbsp;${elem.innerHTML}`;
 };
 
 const addTimeSlot = (e: SubmitEvent & { target: HTMLFormElement }) => {
@@ -280,9 +302,13 @@ interface renderTemplate {
     taskInfo: string;
 }
 
-type taskCallBack = (item: HTMLLIElement) => void;
+type itemCallBack = (item: HTMLLIElement) => void;
 
-const getList = (template: renderTemplate, taskCallBack?: taskCallBack) => {
+const getList = (
+    template: renderTemplate,
+    taskCallBack?: itemCallBack,
+    timeslotCallBack?: itemCallBack
+) => {
     let fragment = document.createDocumentFragment();
 
     for (const timeSlot of timeSlots) {
@@ -294,14 +320,25 @@ const getList = (template: renderTemplate, taskCallBack?: taskCallBack) => {
 
             const newTimeSlotInfo = document.createElement("div");
             addClass(newTimeSlotInfo, "timeslot-content");
+            if (timeslotCallBack) timeslotCallBack(newTimeSlot);
+
             newTimeSlotInfo.innerHTML = replaceStrings(
                 template.timeslotInfo,
                 ["name", timeSlot.name],
-                ["start", intToStime(timeSlot.start)],
+                [
+                    "start",
+                    `${icon("clock-fill")} ${intToStime(timeSlot.start)}`,
+                ],
                 ["end", intToStime(timeSlot.end)],
                 [
                     "buttons",
-                    '<div class="buttons"><button class="delete-button" onclick=handleDelete(this)>Delete</button></div>',
+                    `<div class="buttons"><button class="copy-button">${icon(
+                        "clipboard-plus"
+                    )}</button><button class="edit-button">${icon(
+                        "pencil-square"
+                    )}</button><button class="delete-button" onclick=handleDelete(this)>${icon(
+                        "trash-fill"
+                    )}</button></div>`,
                 ]
             );
 
@@ -332,11 +369,35 @@ const getList = (template: renderTemplate, taskCallBack?: taskCallBack) => {
             newTaskInfo.innerHTML = replaceStrings(
                 template.taskInfo,
                 ["name", task.name],
-                ["start", intToStime(currentTime)],
+                ["start", `${icon("clock-fill")} ${intToStime(currentTime)}`],
                 ["end", intToStime((currentTime += task.length))],
                 [
                     "buttons",
-                    '<div class="buttons"><button class="delete-button" onclick=handleDelete(this)>Delete</button></div>',
+                    `<div class="buttons"><button class="copy-button">${icon(
+                        "clipboard-plus"
+                    )}</button><button class="edit-button">${icon(
+                        "pencil-square"
+                    )}</button><button class="delete-button" onclick=handleDelete(this)>${icon(
+                        "trash-fill"
+                    )}</button></div>`,
+                ],
+                [
+                    "clock",
+                    `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-clock-fill" viewBox="0 0 16 16">
+                <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM8 3.5a.5.5 0 0 0-1 0V9a.5.5 0 0 0 .252.434l3.5 2a.5.5 0 0 0 .496-.868L8 8.71V3.5z"/>
+              </svg>`,
+                ],
+                [
+                    "arrows",
+                    `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-right" viewBox="0 0 16 16">
+                <path fill-rule="evenodd" d="M1 8a.5.5 0 0 1 .5-.5h11.793l-3.147-3.146a.5.5 0 0 1 .708-.708l4 4a.5.5 0 0 1 0 .708l-4 4a.5.5 0 0 1-.708-.708L13.293 8.5H1.5A.5.5 0 0 1 1 8z"/>
+              </svg>`,
+                ],
+                [
+                    "square",
+                    `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-square" viewBox="0 0 16 16">
+                <path d="M14 1a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h12zM2 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2H2z"/>
+              </svg>`,
                 ]
             );
 
@@ -355,9 +416,9 @@ const renderList = () => {
     const list = getList(
         {
             timeslotInfo:
-                '<h2>%NAME%</h2>%BUTTONS%\n<div class="timeline-time">%START% - %END%</div>',
+                '<div class="right"><h2>%NAME%</h2><div class="timeline-time"><em>%START% - %END%</em></div></div><div class="left">%BUTTONS%</div>',
             taskInfo:
-                '<h3>%NAME%</h3>%BUTTONS%\n<div class="timeline-time">%START% - %END%</div>',
+                '<div class="right"><h3>%NAME%</h3><div class="timeline-time">%START% - %END%</div></div><div class="left">%BUTTONS%</div>',
         },
         (task) => {
             task.addEventListener("dragend", handleDragEnd);
@@ -365,6 +426,11 @@ const renderList = () => {
                 e.preventDefault();
             });
             task.draggable = true;
+        },
+        (timeslot) => {
+            timeslot.addEventListener("dragover", (e) => {
+                e.preventDefault();
+            });
         }
     );
 
@@ -392,9 +458,19 @@ const handleDragEnd = (event: DragEvent) => {
         event.clientY
     );
     if (!target_element) return;
-    const parent = checkForClass(target_element, "timeline-task");
+    const parent = checkForClass(
+        target_element,
+        "timeline-task",
+        "timeline-slot"
+    );
     if (!parent) return;
     target_element = traverseUp(target_element, parent);
+
+    if (!target_element) return;
+    if (target_element.className === "timeline-slot") {
+        console.log("T1IMESLOt");
+        return;
+    }
 
     // @ts-ignore
     const from = findTask(getId(event.srcElement.id));
@@ -452,7 +528,7 @@ const printView = async () => {
     const newWindow = window.open();
     if (!newWindow) return;
 
-    const colors = ["red", "green", "orange", "blue", "purple"];
+    const colors = ["red", "orange", "yellow", "blue", "green"];
     let fragment = newWindow.document.createDocumentFragment();
 
     let timeslotsFragment = newWindow.document.createDocumentFragment();
@@ -478,10 +554,22 @@ const printView = async () => {
         const newTimeSlotInfo = newWindow.document.createElement("div");
         addClass(newTimeSlotInfo, "timeslot-content");
         newTimeSlotInfo.innerHTML = replaceStrings(
-            '<div class="timeline-time">&nbsp;%START% - %END%</div><h2>&nbsp;&nbsp;%NAME%</h2>',
+            '&nbsp;%CLOCK%&nbsp;<div class="timeline-time">%START% - %END%</div>&nbsp;%ARROWS%&nbsp;<h3>%NAME%</h3>',
             ["name", timeSlot.name],
             ["start", intToStime(timeSlot.start)],
-            ["end", intToStime(timeSlot.finalEnd)]
+            ["end", intToStime(timeSlot.finalEnd)],
+            [
+                "clock",
+                `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-clock-fill" viewBox="0 0 16 16">
+            <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM8 3.5a.5.5 0 0 0-1 0V9a.5.5 0 0 0 .252.434l3.5 2a.5.5 0 0 0 .496-.868L8 8.71V3.5z"/>
+          </svg>`,
+            ],
+            [
+                "arrows",
+                `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-right" viewBox="0 0 16 16">
+            <path fill-rule="evenodd" d="M1 8a.5.5 0 0 1 .5-.5h11.793l-3.147-3.146a.5.5 0 0 1 .708-.708l4 4a.5.5 0 0 1 0 .708l-4 4a.5.5 0 0 1-.708-.708L13.293 8.5H1.5A.5.5 0 0 1 1 8z"/>
+          </svg>`,
+            ]
         );
 
         const letter = newWindow.document.createElement("div");
@@ -506,7 +594,7 @@ const printView = async () => {
     const listItems = getList(
         {
             taskInfo:
-                '<div class="timeline-time">&nbsp;%START% - %END%</div><h3>&nbsp;&nbsp;%NAME%&nbsp;</h3><input type="checkbox"/>',
+                '&nbsp;%CLOCK%&nbsp;<div class="timeline-time">%START% - %END%</div>&nbsp;%ARROWS%&nbsp;<h3>%NAME%</h3>&nbsp;%SQUARE%',
         },
         (task) => {
             const number = newWindow.document.createElement("div");
@@ -517,9 +605,9 @@ const printView = async () => {
     );
 
     const css = await fetch("../print.css");
-    const style = newWindow.document.createElement("style");
-    style.innerHTML = await css.text();
-    newWindow.document.head.appendChild(style);
+    const styleSheet = newWindow.document.createElement("style");
+    styleSheet.innerHTML = await css.text();
+    newWindow.document.head.appendChild(styleSheet);
 
     const list = newWindow.document.createElement("ol");
     list.replaceChildren(listItems);
@@ -615,12 +703,12 @@ const clear = () => {
 };
 
 const handleDelete = (button: HTMLButtonElement) => {
-    const parent = traverseUp(button, 3);
+    const parent = traverseUp(button, 4);
     if (!parent) return;
     const id = getId(parent.id);
+
     if (parent.id.startsWith("timeslot")) {
         timeSlots[id].deleted = true;
-        // TODO: Figure out how to remove child elements
         const select = document.getElementById(
             "TTimeSlot"
         ) as HTMLSelectElement | null;
@@ -638,9 +726,9 @@ const handleDelete = (button: HTMLButtonElement) => {
 };
 
 document.addEventListener("DOMContentLoaded", async () => {
-    const button = document.getElementById("print-button");
-    if (!button) return;
-    button.addEventListener("click", printView);
+    const printButton = document.getElementById("print-button");
+    if (!printButton) return;
+    printButton.addEventListener("click", printView);
 
     const settings = await (await fetch("../settings.json")).json();
 
@@ -670,4 +758,8 @@ document.addEventListener("DOMContentLoaded", async () => {
     const clearButton = document.getElementById("clear-button");
     if (!clearButton) return;
     clearButton.addEventListener("click", clear);
+
+    addIcons(printButton, "printer-fill");
+    addIcons(saveButton, "save-fill");
+    addIcons(clearButton, "x-circle-fill");
 });

@@ -67,7 +67,10 @@
                                 value="HELLO WORLD"
                             />
                             <br /><br />
-                            <input type="submit" />
+                            <button type="submit">
+                                <i class="bi bi-plus-circle"></i>
+                                Add
+                            </button>
                         </form>
                     </div>
                 </div>
@@ -89,17 +92,16 @@
                                 step="1"
                                 id="TLength"
                                 value="1"
-                            />
-                            <input
+                            /><span>:</span
+                            ><input
                                 required
                                 type="number"
                                 min="0"
                                 max="59"
                                 step="5"
                                 id="TLengthMins"
-                                value="0"
+                                value="00"
                             />
-                            <br />
                             <br />
                             <label>Name</label>
                             <input
@@ -110,16 +112,21 @@
                                 placeholder="enter something"
                             />
                             <br /><br />
-                            <input type="submit" />
+                            <button type="submit">
+                                <i class="bi bi-plus-circle"></i>
+                                Add
+                            </button>
                         </form>
                     </div>
                 </div>
-                <div class="form">
+                <div class="form" id="managementPanel">
                     <button id="print-button">Print</button>
-                    <button id="save-button">Save</button>
+                    <button id="save-button">Save timetable</button>
                     <input type="file" id="load-button" style="display: none" />
-                    <label for="load-button">Select file</label>
-                    <button id="clear-button">Clear</button>
+                    <label for="load-button" id="load-button-text"
+                        ><i class="bi bi-upload"></i>&nbsp;Load timetable</label
+                    >
+                    <button id="clear-button">Clear timetable</button>
                 </div>
             </div>
         </div>

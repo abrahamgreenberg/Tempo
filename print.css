@@ -24,31 +24,42 @@ h2 {
     justify-content: center;
     padding: 0.12em;
     display: inline-flex;
+    font-weight: bolder;
 }
 
 .timeline-content,
 h3,
-h2,
 .timeline-time {
     display: inline-block;
 }
 
-.purple {
-    background-color: purple;
-}
-
-.blue {
-    background-color: blue;
-}
-
-.green {
-    background-color: green;
+.red {
+    background-color: #ee352e;
 }
 
 .orange {
-    background-color: orange;
+    background-color: #ff6319;
 }
 
-.red {
+.yellow {
+    background-color: #fccc0a;
+}
+
+.blue {
+    background-color: #0039a6;
+}
+
+.green {
+    background-color: #6cbe45;
+}
+
+.timeline-time {
+    font-style: italic;
+}
+
+input {
+    border-color: black;
+    border-radius: 0;
     background-color: red;
+    outline: 1px solid red;
 }
