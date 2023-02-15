@@ -508,10 +508,7 @@ const handleDragEnd = (event: DragEvent) => {
     if (from.id === to.id) return;
 
     if (from.timeslotId === to.timeslotId) {
-        console.log("ONE");
         const timeslotTasks = getTimeslotTasks(from.timeslotId);
-
-        console.log(timeslotTasks);
 
         if (from.order < to.order) {
             for (let i = from.order + 1; i <= to.order; i++)
@@ -568,7 +565,6 @@ const printView = async () => {
 
     if (timetableOptions.day) {
         const day = newWindow.document.createElement("em");
-        console.log(timetableOptions.day);
         day.innerHTML = getDay(timetableOptions.day);
         fragment.appendChild(day);
     }
@@ -736,7 +732,6 @@ const updateFormNameAndDay = () => {
     if (!dayForm) return;
     const days = dayForm.childNodes[3] as HTMLSelectElement;
     if (days.children.length === 0) setDefaultDays(days);
-    console.log(timetableOptions.day);
     days.value = timetableOptions.day.toString();
     days.addEventListener("change", setDay);
 };
@@ -864,7 +859,6 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     if (now.getHours() - now.getTimezoneOffset() / 60 >= 18) day++;
     if (day === 7) day = 0;
-    console.log(day);
     timetableOptions.day = day;
 
     updateFormNameAndDay();
