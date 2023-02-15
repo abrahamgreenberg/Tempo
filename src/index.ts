@@ -28,6 +28,114 @@ interface Save {
     tasks: Task[];
 }
 
+const loadSave = (save: Save) => {
+    timetableOptions.name = save.name;
+    timetableOptions.day = save.name;
+    timeSlots = save.timeslots;
+    allTasks = save.tasks;
+
+    for (const task of save.tasks) {
+        const timeslotTasks = taskTimeslots.get(task.timeslotId) ?? [];
+        timeslotTasks[task.order] = task.id;
+        taskTimeslots.set(task.timeslotId, timeslotTasks);
+    }
+
+    renderList();
+};
+
+const testData = () => {
+    const testSave: Save = {
+        name: "Test",
+        day: "Monday",
+        timeslots: [
+            {
+                name: "Morning",
+                deleted: false,
+                start: 540,
+                end: 660,
+                finalEnd: 660,
+                id: 0,
+            },
+            {
+                name: "Lunch",
+                deleted: false,
+                start: 765,
+                end: 825,
+                finalEnd: 825,
+                id: 1,
+            },
+            {
+                name: "After school",
+                deleted: false,
+                start: 1020,
+                end: 1170,
+                finalEnd: 1170,
+                id: 2,
+            },
+        ],
+        tasks: [
+            {
+                deleted: false,
+                id: 0,
+                length: 60,
+                name: "Math hw",
+                order: 0,
+                timeslotId: 0,
+            },
+            {
+                deleted: false,
+                id: 1,
+                length: 60,
+                name: "Computer science hw",
+                order: 1,
+                timeslotId: 0,
+            },
+            {
+                deleted: false,
+                id: 2,
+                length: 60,
+                name: "Economics",
+                order: 0,
+                timeslotId: 1,
+            },
+            {
+                deleted: false,
+                id: 3,
+                length: 30,
+                name: "Economics",
+                order: 0,
+                timeslotId: 2,
+            },
+            {
+                deleted: false,
+                id: 4,
+                length: 30,
+                name: "Math",
+                order: 1,
+                timeslotId: 2,
+            },
+            {
+                deleted: false,
+                id: 5,
+                length: 60,
+                name: "Coursework",
+                order: 2,
+                timeslotId: 2,
+            },
+            {
+                deleted: false,
+                id: 6,
+                length: 60,
+                name: "Trombone",
+                order: 3,
+                timeslotId: 2,
+            },
+        ],
+    };
+
+    loadSave(testSave);
+};
+
 const isTimeslot = (obj: any): obj is TimeSlot => {
     return (
         obj &&
@@ -467,20 +575,42 @@ const handleDragEnd = (event: DragEvent) => {
     target_element = traverseUp(target_element, parent);
 
     if (!target_element) return;
-    if (target_element.className === "timeline-slot") {
-        console.log("T1IMESLOt");
-        return;
-    }
 
     // @ts-ignore
     const from = findTask(getId(event.srcElement.id));
+
+    if (target_element.className === "timeline-slot") {
+        const timeslot = timeSlots[+getId(target_element.id)];
+        if (from.timeslotId === timeslot.id) return;
+        const newTimeslotTasks = getTimeslotTasks(timeslot.id);
+        let currentTimeslotTasks = getTimeslotTasks(from.timeslotId);
+
+        currentTimeslotTasks = currentTimeslotTasks.filter((task) => {
+            return task.id !== from.id;
+        });
+        updateTimeslotTasks(from.timeslotId, currentTimeslotTasks);
+
+        for (let i = 0; i < newTimeslotTasks.length; i++)
+            newTimeslotTasks[i].order = i + 1;
+        from.timeslotId = timeslot.id;
+        from.order = 0;
+        newTimeslotTasks.unshift(from);
+        updateTimeslotTasks(timeslot.id, newTimeslotTasks);
+        renderList();
+
+        return;
+    }
+
     // @ts-ignore
     const to = findTask(getId(target_element.id));
     if (!from || !to) return;
     if (from.id === to.id) return;
 
     if (from.timeslotId === to.timeslotId) {
+        console.log("ONE");
         const timeslotTasks = getTimeslotTasks(from.timeslotId);
+
+        console.log(timeslotTasks);
 
         if (from.order < to.order) {
             for (let i = from.order + 1; i <= to.order; i++)
@@ -513,9 +643,6 @@ const handleDragEnd = (event: DragEvent) => {
         }
 
         toTimeslotTasks[toTimeslotTasks.length - 1].order = to.order - 1;
-
-        console.log(fromTimeslotTasks);
-        console.log(toTimeslotTasks);
     }
     renderList();
 };
@@ -666,18 +793,7 @@ const loadConfig = (event: Event) => {
         try {
             const data = JSON.parse(e.target?.result as string);
             if (!isSave(data)) throw new Error();
-            timetableOptions.name = data.name;
-            timetableOptions.day = data.name;
-            timeSlots = data.timeslots;
-            allTasks = data.tasks;
-
-            for (const task of data.tasks) {
-                const timeslotTasks = taskTimeslots.get(task.timeslotId) ?? [];
-                timeslotTasks[task.order] = task.id;
-                taskTimeslots.set(task.timeslotId, timeslotTasks);
-            }
-
-            renderList();
+            loadSave(data);
         } catch {
             return;
         } finally {
@@ -762,4 +878,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     addIcons(printButton, "printer-fill");
     addIcons(saveButton, "save-fill");
     addIcons(clearButton, "x-circle-fill");
+
+    testData();
 });
