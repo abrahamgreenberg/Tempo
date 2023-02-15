@@ -424,6 +424,34 @@ interface renderTemplate {
 
 type itemCallBack = (item: HTMLLIElement) => void;
 
+const createTimeslotElement = (
+    template: string,
+    document: Document,
+    timeSlot: TimeSlot,
+    replacements: [string, string][],
+    callback?: itemCallBack
+) => {
+    if (timeSlot.deleted) return false;
+    const newTimeSlot = document.createElement("li");
+    addClass(newTimeSlot, "timeline-slot");
+    newTimeSlot.id = `timeslot-${timeSlot.id}`;
+
+    const newTimeSlotInfo = document.createElement("div");
+    addClass(newTimeSlotInfo, "timeslot-content");
+    if (callback) callback(newTimeSlot);
+
+    newTimeSlotInfo.innerHTML = replaceStrings(
+        template,
+        ["name", timeSlot.name],
+        ["clock", Constants.iconsClock],
+        ["start", intToStime(timeSlot.start)],
+        ...replacements
+    );
+
+    newTimeSlot.appendChild(newTimeSlotInfo);
+    return newTimeSlot;
+};
+
 const getList = (
     template: renderTemplate,
     taskCallBack?: itemCallBack,
@@ -432,38 +460,28 @@ const getList = (
     let fragment = document.createDocumentFragment();
 
     for (const timeSlot of timeSlots) {
-        if (timeSlot.deleted) continue;
         if (template.timeslotInfo) {
-            const newTimeSlot = document.createElement("li");
-            addClass(newTimeSlot, "timeline-slot");
-            newTimeSlot.id = `timeslot-${timeSlot.id}`;
-
-            const newTimeSlotInfo = document.createElement("div");
-            addClass(newTimeSlotInfo, "timeslot-content");
-            if (timeslotCallBack) timeslotCallBack(newTimeSlot);
-
-            newTimeSlotInfo.innerHTML = replaceStrings(
+            const tsElem = createTimeslotElement(
                 template.timeslotInfo,
-                ["name", timeSlot.name],
+                document,
+                timeSlot,
                 [
-                    "start",
-                    `${icon("clock-fill")} ${intToStime(timeSlot.start)}`,
+                    ["end", intToStime(timeSlot.end)],
+                    [
+                        "buttons",
+                        `<div class="buttons"><button class="copy-button">${icon(
+                            "clipboard-plus"
+                        )}</button><button class="edit-button">${icon(
+                            "pencil-square"
+                        )}</button><button class="delete-button" onclick=handleDelete(this)>${icon(
+                            "trash-fill"
+                        )}</button></div>`,
+                    ],
                 ],
-                ["end", intToStime(timeSlot.end)],
-                [
-                    "buttons",
-                    `<div class="buttons"><button class="copy-button">${icon(
-                        "clipboard-plus"
-                    )}</button><button class="edit-button">${icon(
-                        "pencil-square"
-                    )}</button><button class="delete-button" onclick=handleDelete(this)>${icon(
-                        "trash-fill"
-                    )}</button></div>`,
-                ]
+                timeslotCallBack
             );
-
-            newTimeSlot.appendChild(newTimeSlotInfo);
-            fragment.appendChild(newTimeSlot);
+            if (tsElem) fragment.appendChild(tsElem);
+            else continue;
         }
 
         let timeslotTasks = getTimeslotTasks(timeSlot.id);
@@ -521,7 +539,7 @@ const renderList = () => {
     const list = getList(
         {
             timeslotInfo:
-                '<div class="right"><h2>%NAME%</h2><div class="timeline-time"><em>%START% - %END%</em></div></div><div class="left">%BUTTONS%</div>',
+                '<div class="right"><h2>%NAME%</h2><div class="timeline-time"><em>%CLOCK% %START% - %END%</em></div></div><div class="left">%BUTTONS%</div>',
             taskInfo:
                 '<div class="right"><h3>%NAME%</h3><div class="timeline-time">%START% - %END%</div></div><div class="left">%BUTTONS%</div>',
         },
@@ -671,29 +689,23 @@ const printView = async () => {
     let i = 0;
 
     for (const timeSlot of timeSlots) {
-        const newTimeSlot = newWindow.document.createElement("li");
-        addClass(newTimeSlot, "timeline-slot");
-        newTimeSlot.id = `timeslot-${timeSlot.id}`;
-
-        const newTimeSlotInfo = newWindow.document.createElement("div");
-        addClass(newTimeSlotInfo, "timeslot-content");
-        newTimeSlotInfo.innerHTML = replaceStrings(
+        const timeslotElem = createTimeslotElement(
             '&nbsp;%CLOCK%&nbsp;<div class="timeline-time">%START% - %END%</div>&nbsp;%ARROWS%&nbsp;<h3>%NAME%</h3>',
-            ["name", timeSlot.name],
-            ["start", intToStime(timeSlot.start)],
-            ["end", intToStime(timeSlot.finalEnd)],
-            ["clock", Constants.iconsClock],
-            ["arrows", Constants.iconsSquare]
+            newWindow.document,
+            timeSlot,
+            [
+                ["end", intToStime(timeSlot.finalEnd)],
+                ["arrows", Constants.iconsSquare],
+            ],
+            (timeslot) => {
+                const letter = newWindow.document.createElement("div");
+                letter.innerHTML = String.fromCharCode("A".charCodeAt(0) + i++);
+                letter.classList.add("ul-number", randomElement(colors));
+                timeslot.insertBefore(letter, timeslot.firstChild);
+            }
         );
-
-        const letter = newWindow.document.createElement("div");
-        letter.innerHTML = String.fromCharCode("A".charCodeAt(0) + i++);
-
-        letter.classList.add("ul-number", randomElement(colors));
-        newTimeSlotInfo.insertBefore(letter, newTimeSlotInfo.firstChild);
-
-        newTimeSlot.appendChild(newTimeSlotInfo);
-        timeslotsFragment.appendChild(newTimeSlot);
+        if (!timeslotElem) continue;
+        timeslotsFragment.appendChild(timeslotElem);
     }
 
     const documentTimeSlots = newWindow.document.createElement("ol");
@@ -729,7 +741,7 @@ const printView = async () => {
 
     newWindow.document.body.replaceChildren(fragment);
 
-    newWindow.print();
+    // newWindow.print();
 };
 
 const setDefaultDays = (select: HTMLSelectElement) => {

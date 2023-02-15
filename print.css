@@ -28,6 +28,7 @@ h2 {
 }
 
 .timeline-content,
+.timeslot-content,
 h3,
 .timeline-time {
     display: inline-block;
