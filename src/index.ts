@@ -463,7 +463,9 @@ const getList = (
 
     for (const timeSlot of timeSlots) {
         const buttonIcon = (name: string, iconName: string) => {
-            return `<button class="${name}-button">${icon(iconName)}</button>`;
+            return `<button class="${name}-button" onclick="handle${
+                name.charAt(0).toUpperCase() + name.slice(1)
+            }(this)">${icon(iconName)}</button>`;
         };
 
         const buttons = `<div class="buttons">
