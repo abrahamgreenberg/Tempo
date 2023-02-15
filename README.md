@@ -22,17 +22,19 @@ A project that automatically generates my plan for the next day
 1.  ~~Add constants enum~~
 1.  Fix bug in removing values from dropdown when clearing lists
 1.  ~~Fix bug where deleted category is rendered in print view~~
-1.  Code for setting default day, to be implemented:
+1.  ~~Code for setting default day, to be implemented:
 
-    ```js
+    ````js
     const now = new Date();
     let day = now.getDay();
 
-    if (now.getHours() >= 18) day++;
+    if (now.getHours() - now.getTimeZoneOffset() / 60 >= 18) day++;
     if (day === 7) day = 0;
 
     console.log(day);
-    ```
+    ```~~
+
+    ````
 
 1.  Presets
 1.  Editing tasks

@@ -20,12 +20,12 @@ interface Task extends Item {
 
 interface TimetableOptions {
     name: string;
-    day: string;
+    day: number;
 }
 
 interface Save {
     name: string;
-    day: string;
+    day: number;
     timeslots: TimeSlot[];
     tasks: Task[];
 }
@@ -41,114 +41,6 @@ enum Constants {
 <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM8 3.5a.5.5 0 0 0-1 0V9a.5.5 0 0 0 .252.434l3.5 2a.5.5 0 0 0 .496-.868L8 8.71V3.5z"/>
 </svg>`,
 }
-
-const loadSave = (save: Save) => {
-    timetableOptions.name = save.name;
-    timetableOptions.day = save.name;
-    timeSlots = save.timeslots;
-    allTasks = save.tasks;
-
-    for (const task of save.tasks) {
-        const timeslotTasks = taskTimeslots.get(task.timeslotId) ?? [];
-        timeslotTasks[task.order] = task.id;
-        taskTimeslots.set(task.timeslotId, timeslotTasks);
-    }
-
-    renderList();
-};
-
-const testData = () => {
-    const testSave: Save = {
-        name: "Test",
-        day: "Monday",
-        timeslots: [
-            {
-                name: "Morning",
-                deleted: false,
-                start: 540,
-                end: 660,
-                finalEnd: 660,
-                id: 0,
-            },
-            {
-                name: "Lunch",
-                deleted: false,
-                start: 765,
-                end: 825,
-                finalEnd: 825,
-                id: 1,
-            },
-            {
-                name: "After school",
-                deleted: false,
-                start: 1020,
-                end: 1170,
-                finalEnd: 1170,
-                id: 2,
-            },
-        ],
-        tasks: [
-            {
-                deleted: false,
-                id: 0,
-                length: 60,
-                name: "Math hw",
-                order: 0,
-                timeslotId: 0,
-            },
-            {
-                deleted: false,
-                id: 1,
-                length: 60,
-                name: "Computer science hw",
-                order: 1,
-                timeslotId: 0,
-            },
-            {
-                deleted: false,
-                id: 2,
-                length: 60,
-                name: "Economics",
-                order: 0,
-                timeslotId: 1,
-            },
-            {
-                deleted: false,
-                id: 3,
-                length: 30,
-                name: "Economics",
-                order: 0,
-                timeslotId: 2,
-            },
-            {
-                deleted: false,
-                id: 4,
-                length: 30,
-                name: "Math",
-                order: 1,
-                timeslotId: 2,
-            },
-            {
-                deleted: false,
-                id: 5,
-                length: 60,
-                name: "Coursework",
-                order: 2,
-                timeslotId: 2,
-            },
-            {
-                deleted: false,
-                id: 6,
-                length: 60,
-                name: "Trombone",
-                order: 3,
-                timeslotId: 2,
-            },
-        ],
-    };
-
-    loadSave(testSave);
-};
 
 const isTimeslot = (obj: any): obj is TimeSlot => {
     return (
@@ -191,7 +83,7 @@ const isSave = (obj: any): obj is Save => {
 
 const timetableOptions: TimetableOptions = {
     name: "DEFAULT",
-    day: "DEFAULT",
+    day: 0,
 };
 
 let timeSlots: TimeSlot[] = [];
@@ -676,7 +568,8 @@ const printView = async () => {
 
     if (timetableOptions.day) {
         const day = newWindow.document.createElement("em");
-        day.innerHTML = timetableOptions.day;
+        console.log(timetableOptions.day);
+        day.innerHTML = getDay(timetableOptions.day);
         fragment.appendChild(day);
     }
 
@@ -833,6 +726,130 @@ const handleDelete = (button: HTMLButtonElement) => {
     renderList();
 };
 
+const updateFormNameAndDay = () => {
+    const nameForm = document.getElementById("name");
+    if (!nameForm) return;
+    (nameForm.childNodes[3] as HTMLInputElement).value = timetableOptions.name;
+    nameForm.addEventListener("submit", setName);
+
+    const dayForm = document.getElementById("day");
+    if (!dayForm) return;
+    const days = dayForm.childNodes[3] as HTMLSelectElement;
+    if (days.children.length === 0) setDefaultDays(days);
+    console.log(timetableOptions.day);
+    days.value = timetableOptions.day.toString();
+    days.addEventListener("change", setDay);
+};
+
+const loadSave = (save: Save) => {
+    timetableOptions.name = save.name;
+    timetableOptions.day = save.day;
+    timeSlots = save.timeslots;
+    allTasks = save.tasks;
+
+    for (const task of save.tasks) {
+        const timeslotTasks = taskTimeslots.get(task.timeslotId) ?? [];
+        timeslotTasks[task.order] = task.id;
+        taskTimeslots.set(task.timeslotId, timeslotTasks);
+    }
+
+    renderList();
+    updateFormNameAndDay();
+};
+
+const testData = () => {
+    const testSave: Save = {
+        name: "Test",
+        day: 1,
+        timeslots: [
+            {
+                name: "Morning",
+                deleted: false,
+                start: 540,
+                end: 660,
+                finalEnd: 660,
+                id: 0,
+            },
+            {
+                name: "Lunch",
+                deleted: false,
+                start: 765,
+                end: 825,
+                finalEnd: 825,
+                id: 1,
+            },
+            {
+                name: "After school",
+                deleted: false,
+                start: 1020,
+                end: 1170,
+                finalEnd: 1170,
+                id: 2,
+            },
+        ],
+        tasks: [
+            {
+                deleted: false,
+                id: 0,
+                length: 60,
+                name: "Math hw",
+                order: 0,
+                timeslotId: 0,
+            },
+            {
+                deleted: false,
+                id: 1,
+                length: 60,
+                name: "Computer science hw",
+                order: 1,
+                timeslotId: 0,
+            },
+            {
+                deleted: false,
+                id: 2,
+                length: 60,
+                name: "Economics",
+                order: 0,
+                timeslotId: 1,
+            },
+            {
+                deleted: false,
+                id: 3,
+                length: 30,
+                name: "Economics",
+                order: 0,
+                timeslotId: 2,
+            },
+            {
+                deleted: false,
+                id: 4,
+                length: 30,
+                name: "Math",
+                order: 1,
+                timeslotId: 2,
+            },
+            {
+                deleted: false,
+                id: 5,
+                length: 60,
+                name: "Coursework",
+                order: 2,
+                timeslotId: 2,
+            },
+            {
+                deleted: false,
+                id: 6,
+                length: 60,
+                name: "Trombone",
+                order: 3,
+                timeslotId: 2,
+            },
+        ],
+    };
+
+    loadSave(testSave);
+};
+
 document.addEventListener("DOMContentLoaded", async () => {
     const printButton = document.getElementById("print-button");
     if (!printButton) return;
@@ -841,19 +858,16 @@ document.addEventListener("DOMContentLoaded", async () => {
     settings = await (await fetch("../settings.json")).json();
 
     timetableOptions.name = settings.defaultName;
-    timetableOptions.day = getDay(settings.defaultDay);
 
-    const nameForm = document.getElementById("name");
-    if (!nameForm) return;
-    (nameForm.childNodes[3] as HTMLInputElement).value = settings.defaultName;
-    nameForm.addEventListener("submit", setName);
+    const now = new Date();
+    let day = now.getDay();
 
-    const dayForm = document.getElementById("day");
-    if (!dayForm) return;
-    const days = dayForm.childNodes[3] as HTMLSelectElement;
-    setDefaultDays(days);
-    days.value = settings.defaultDay;
-    days.addEventListener("change", setDay);
+    if (now.getHours() - now.getTimezoneOffset() / 60 >= 18) day++;
+    if (day === 7) day = 0;
+    console.log(day);
+    timetableOptions.day = day;
+
+    updateFormNameAndDay();
 
     const saveButton = document.getElementById("save-button");
     if (!saveButton) return;

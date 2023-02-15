@@ -1,6 +1,5 @@
 {
     "defaultName": "Timetable",
-    "defaultDay": 7,
     "listViewTimeslot": "<div class=\"right\"><h2>%NAME%</h2><div class=\"timeline-time\"><em>%CLOCK% %START% - %END%</em></div></div><div class=\"left\">%BUTTONS%</div>",
     "listViewTask": "<div class=\"right\"><h3>%NAME%</h3><div class=\"timeline-time\">%START% - %END%</div></div><div class=\"left\">%BUTTONS%</div>",
     "printViewTimeslot": "&nbsp;%CLOCK%&nbsp;<div class=\"timeline-time\">%START% - %END%</div>&nbsp;%ARROWS%&nbsp;<h3>%NAME%</h3>",
