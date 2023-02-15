@@ -1,3 +1,5 @@
+let settings: any;
+
 interface Item {
     id: number;
     name: string;
@@ -460,6 +462,16 @@ const getList = (
     let fragment = document.createDocumentFragment();
 
     for (const timeSlot of timeSlots) {
+        const buttonIcon = (name: string, iconName: string) => {
+            return `<button class="${name}-button">${icon(iconName)}</button>`;
+        };
+
+        const buttons = `<div class="buttons">
+        ${buttonIcon("copy", "clipboard-plus")}
+        ${buttonIcon("edit", "pencil-square")}
+        ${buttonIcon("delete", "trash-fill")}
+        </div>`;
+
         if (template.timeslotInfo) {
             const tsElem = createTimeslotElement(
                 template.timeslotInfo,
@@ -467,16 +479,7 @@ const getList = (
                 timeSlot,
                 [
                     ["end", intToStime(timeSlot.end)],
-                    [
-                        "buttons",
-                        `<div class="buttons"><button class="copy-button">${icon(
-                            "clipboard-plus"
-                        )}</button><button class="edit-button">${icon(
-                            "pencil-square"
-                        )}</button><button class="delete-button" onclick=handleDelete(this)>${icon(
-                            "trash-fill"
-                        )}</button></div>`,
-                    ],
+                    ["buttons", buttons],
                 ],
                 timeslotCallBack
             );
@@ -509,16 +512,7 @@ const getList = (
                 ["name", task.name],
                 ["start", `${icon("clock-fill")} ${intToStime(currentTime)}`],
                 ["end", intToStime((currentTime += task.length))],
-                [
-                    "buttons",
-                    `<div class="buttons"><button class="copy-button">${icon(
-                        "clipboard-plus"
-                    )}</button><button class="edit-button">${icon(
-                        "pencil-square"
-                    )}</button><button class="delete-button" onclick=handleDelete(this)>${icon(
-                        "trash-fill"
-                    )}</button></div>`,
-                ],
+                ["buttons", buttons],
                 ["clock", Constants.iconsClock],
                 ["arrows", Constants.iconsArrow],
                 ["square", Constants.iconsSquare]
@@ -538,10 +532,8 @@ const getList = (
 const renderList = () => {
     const list = getList(
         {
-            timeslotInfo:
-                '<div class="right"><h2>%NAME%</h2><div class="timeline-time"><em>%CLOCK% %START% - %END%</em></div></div><div class="left">%BUTTONS%</div>',
-            taskInfo:
-                '<div class="right"><h3>%NAME%</h3><div class="timeline-time">%START% - %END%</div></div><div class="left">%BUTTONS%</div>',
+            timeslotInfo: settings.listViewTimeslot,
+            taskInfo: settings.listViewTask,
         },
         (task) => {
             task.addEventListener("dragend", handleDragEnd);
@@ -690,7 +682,7 @@ const printView = async () => {
 
     for (const timeSlot of timeSlots) {
         const timeslotElem = createTimeslotElement(
-            '&nbsp;%CLOCK%&nbsp;<div class="timeline-time">%START% - %END%</div>&nbsp;%ARROWS%&nbsp;<h3>%NAME%</h3>',
+            settings.printViewTimeslot,
             newWindow.document,
             timeSlot,
             [
@@ -719,8 +711,7 @@ const printView = async () => {
     i = 0;
     const listItems = getList(
         {
-            taskInfo:
-                '&nbsp;%CLOCK%&nbsp;<div class="timeline-time">%START% - %END%</div>&nbsp;%ARROWS%&nbsp;<h3>%NAME%</h3>&nbsp;%SQUARE%',
+            taskInfo: settings.printViewTask,
         },
         (task) => {
             const number = newWindow.document.createElement("div");
@@ -845,7 +836,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (!printButton) return;
     printButton.addEventListener("click", printView);
 
-    const settings = await (await fetch("../settings.json")).json();
+    settings = await (await fetch("../settings.json")).json();
 
     timetableOptions.name = settings.defaultName;
     timetableOptions.day = getDay(settings.defaultDay);
