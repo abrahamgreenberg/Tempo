@@ -348,6 +348,8 @@ const getList = (
     let fragment = document.createDocumentFragment();
 
     for (const timeSlot of timeSlots) {
+        if (timeSlot.deleted) continue;
+
         const buttonIcon = (name: string, iconName: string) => {
             return `<button class="${name}-button" onclick="handle${
                 name.charAt(0).toUpperCase() + name.slice(1)
