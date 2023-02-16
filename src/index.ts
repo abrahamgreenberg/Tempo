@@ -589,7 +589,7 @@ const printView = async () => {
             timeSlot,
             [
                 ["end", intToStime(timeSlot.finalEnd)],
-                ["arrows", Constants.iconsSquare],
+                ["arrows", Constants.iconsArrow],
             ],
             (timeslot) => {
                 const letter = newWindow.document.createElement("div");
