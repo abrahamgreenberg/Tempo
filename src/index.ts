@@ -560,11 +560,38 @@ const randomElement = <T>(array: T[]) => {
     return array[Math.floor(Math.random() * array.length)];
 };
 
+const selectColor = (prevColor1: string | null, prevColor2: string | null) => {
+    const colors = ["red", "orange", "yellow", "blue", "green"];
+    let probs = new Array(colors.length).fill(1);
+
+    if (prevColor1) {
+        probs[colors.indexOf(prevColor1)] *= 0.5;
+    }
+
+    if (prevColor2) {
+        probs[colors.indexOf(prevColor2)] *= 0.2;
+        for (let i = 0; i < probs.length; i++) {
+            if (i !== colors.indexOf(prevColor2)) {
+                probs[i] *= 0.8;
+            }
+        }
+    }
+
+    let totalProb = probs.reduce((a, b) => a + b);
+    let rand = Math.random() * totalProb;
+    for (let i = 0; i < probs.length; i++) {
+        if (rand < probs[i]) {
+            return colors[i];
+        }
+        rand -= probs[i];
+    }
+    return colors[0];
+};
+
 const printView = async () => {
     const newWindow = window.open();
     if (!newWindow) return;
 
-    const colors = ["red", "orange", "yellow", "blue", "green"];
     let fragment = newWindow.document.createDocumentFragment();
 
     let timeslotsFragment = newWindow.document.createDocumentFragment();
@@ -582,6 +609,9 @@ const printView = async () => {
 
     let i = 0;
 
+    let prevColor1: string | null = null;
+    let prevColor2: string | null = null;
+
     for (const timeSlot of timeSlots) {
         const timeslotElem = createTimeslotElement(
             settings.printViewTimeslot,
@@ -594,7 +624,10 @@ const printView = async () => {
             (timeslot) => {
                 const letter = newWindow.document.createElement("div");
                 letter.innerHTML = String.fromCharCode("A".charCodeAt(0) + i++);
-                letter.classList.add("ul-number", randomElement(colors));
+                const color = selectColor(prevColor1, prevColor2);
+                letter.classList.add("ul-number", color);
+                prevColor2 = prevColor1;
+                prevColor1 = color;
                 timeslot.insertBefore(letter, timeslot.firstChild);
             }
         );
@@ -618,7 +651,10 @@ const printView = async () => {
         (task) => {
             const number = newWindow.document.createElement("div");
             number.innerHTML = (++i).toString();
-            number.classList.add("ul-number", randomElement(colors));
+            const color = selectColor(prevColor1, prevColor2);
+            number.classList.add("ul-number", color);
+            prevColor2 = prevColor1;
+            prevColor1 = color;
             task.insertBefore(number, task.firstChild);
         }
     );
