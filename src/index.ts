@@ -652,7 +652,7 @@ const setName = (e: SubmitEvent) => {
 
 const setDay = (e: Event) => {
     // @ts-ignore
-    timetableOptions.day = getDay(e.target.value);
+    timetableOptions.day = parseInt(e.target.value);
 };
 
 const saveConfig = () => {
