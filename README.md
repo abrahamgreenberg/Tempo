@@ -20,28 +20,16 @@ A project that automatically generates my plan for the next day
     -> https://www.figma.com/file/fZKNDonKnhY0Uk2dHYmIwc/Untitled?node-id=0%3A1&t=WC7003374GTmoHxB-0~~
 1.  ~~Fix bug where you cant drag items on timeslots~~
 1.  ~~Add constants enum~~
-1.  Fix bug in removing values from dropdown when clearing lists
 1.  ~~Fix bug where deleted category is rendered in print view~~
-1.  ~~Code for setting default day, to be implemented:
-
-    ````js
-    const now = new Date();
-    let day = now.getDay();
-
-    if (now.getHours() - now.getTimeZoneOffset() / 60 >= 18) day++;
-    if (day === 7) day = 0;
-
-    console.log(day);
-    ```~~
-
-    ````
-
+1.  ~~Code for setting default day, to be implemented~~
+1.  ~~fix bug encountred when deleting tasksin multiple time slots~~
+1.  ~~Fix bug in removing values from dropdown when clearing lists~~
+1.  Better colour algorithm in the print view
 1.  Presets
 1.  Editing tasks
 1.  Copying tasks
 1.  Change save name to the name of the timetable
 1.  Auto close print view when printed
 1.  Implement webpack
-1.  ~~fix bug encountred when deleting tasksin multiple time slots~~
 1.  FUTURE: Themes
     <br />-> Would it be possible to do theme previews?

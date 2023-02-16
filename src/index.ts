@@ -248,13 +248,7 @@ const addTimeSlot = (e: SubmitEvent & { target: HTMLFormElement }) => {
 
     e.target.reset();
 
-    let option = document.createElement("option");
-    option.text = timeSlots[slot - 1].name;
-    option.value = (slot - 1).toString();
-
-    (document.getElementById("TTimeSlot") as HTMLSelectElement | null)?.add(
-        option
-    );
+    renderTimeslotDropdown();
 
     removeErrors("TSTimeError");
 
@@ -450,6 +444,21 @@ const renderList = () => {
     timeline.parentElement.style.display = "block";
 };
 
+const renderTimeslotDropdown = () => {
+    const timeslotsFragment = document.createDocumentFragment();
+
+    for (const timeslot of timeSlots) {
+        if (timeslot.deleted) continue;
+        let option = document.createElement("option");
+        option.text = timeslot.name;
+        option.value = timeslot.id.toString();
+        timeslotsFragment.appendChild(option);
+    }
+    (
+        document.getElementById("TTimeSlot") as HTMLSelectElement | null
+    )?.replaceChildren(timeslotsFragment);
+};
+
 const getId = (string: string) => {
     const split = string.split("-");
     return +split[split.length - 1];
@@ -623,7 +632,7 @@ const printView = async () => {
 
     newWindow.document.body.replaceChildren(fragment);
 
-    // newWindow.print();
+    newWindow.print();
 };
 
 const setDefaultDays = (select: HTMLSelectElement) => {
@@ -689,6 +698,7 @@ const clear = () => {
     allTasks = [];
     taskTimeslots.clear();
     renderList();
+    renderTimeslotDropdown();
     const timeline = document.getElementById("timeline");
     if (!timeline) return;
     const noElem = document.createElement("h2");
@@ -706,15 +716,7 @@ const handleDelete = (button: HTMLButtonElement) => {
 
     if (parent.id.startsWith("timeslot")) {
         timeSlots[id].deleted = true;
-        const select = document.getElementById(
-            "TTimeSlot"
-        ) as HTMLSelectElement | null;
-        if (select)
-            for (let i = 0; i < select.options.length; i++)
-                if (select.options[i].value === id.toString()) {
-                    select.remove(i);
-                    break;
-                }
+        renderTimeslotDropdown();
     } else {
         allTasks[id].deleted = true;
     }
@@ -749,6 +751,7 @@ const loadSave = (save: Save) => {
     }
 
     renderList();
+    renderTimeslotDropdown();
     updateFormNameAndDay();
 };
 
