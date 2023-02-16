@@ -24,7 +24,9 @@ A project that automatically generates my plan for the next day
 1.  ~~Code for setting default day, to be implemented~~
 1.  ~~fix bug encountred when deleting tasksin multiple time slots~~
 1.  ~~Fix bug in removing values from dropdown when clearing lists~~
+1.  Day is undefined when I change ti
 1.  Better colour algorithm in the print view
+1.  Option to regenerate colours in print view
 1.  Presets
 1.  Editing tasks
 1.  Copying tasks
