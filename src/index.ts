@@ -6,6 +6,15 @@ interface Item {
     deleted: boolean;
 }
 
+interface PresetItem {
+    name: string;
+}
+
+interface PresetTimeSlot extends PresetItem {
+    start: number;
+    end: number;
+}
+
 interface TimeSlot extends Item {
     start: number;
     end: number;
@@ -57,6 +66,16 @@ const isTimeslot = (obj: any): obj is TimeSlot => {
     );
 };
 
+const isPresetTimeSlot = (obj: any): obj is PresetTimeSlot => {
+    return (
+        obj &&
+        typeof obj === "object" &&
+        typeof obj.name === "string" &&
+        typeof obj.start === "number" &&
+        typeof obj.end === "number"
+    );
+};
+
 const isTask = (obj: any): obj is Task => {
     return (
         obj &&
@@ -89,6 +108,7 @@ const timetableOptions: TimetableOptions = {
 };
 
 let timeSlots: TimeSlot[] = [];
+let presetTimeslots: PresetTimeSlot[] = [];
 let allTasks: Task[] = [];
 const taskTimeslots: Map<number, number[]> = new Map();
 
@@ -232,7 +252,7 @@ const addTimeSlot = (e: SubmitEvent & { target: HTMLFormElement }) => {
                 "TimeError"
             );
 
-    const slot = timeSlots.push({
+    timeSlots.push({
         id: timeSlots.length,
         // @ts-ignore
         name: e.target.elements.TSName.value,
@@ -253,6 +273,52 @@ const addTimeSlot = (e: SubmitEvent & { target: HTMLFormElement }) => {
     renderTimeslotDropdown();
 
     removeErrors("TSTimeError");
+
+    renderList();
+    return true;
+};
+
+const addDefaultTimeSlot = (e: SubmitEvent & { target: HTMLFormElement }) => {
+    e.preventDefault();
+    const error = (message: string, ...elements: string[]) => {
+        for (const element of elements) displayError(`DTS${element}`, message);
+        return false;
+    };
+    if (!e.target) return;
+
+    const id = parseInt(e.target.DTimeSlot.value as string);
+    const timeslot = presetTimeslots[id];
+    for (const slot of timeSlots)
+        if (
+            timeslot.start < slot.end &&
+            timeslot.end > slot.start &&
+            !slot.deleted
+        )
+            return error(
+                "There is already another time slot in those times!",
+                "TimeError"
+            );
+
+    timeSlots.push({
+        id: timeSlots.length,
+        name: timeslot.name,
+        start: timeslot.start,
+        end: timeslot.end,
+        finalEnd: timeslot.end,
+        deleted: false,
+    });
+
+    timeSlots = timeSlots.sort((a, b) => {
+        if (a.start < b.start) return -1;
+        if (a.start > b.start) return 1;
+        return 0;
+    });
+
+    e.target.reset();
+
+    renderTimeslotDropdown();
+
+    removeErrors("DTSTimeError");
 
     renderList();
     return true;
@@ -906,12 +972,32 @@ const testData = () => {
     loadSave(testSave);
 };
 
+const setDefaults = (settings: any) => {
+    if (!settings.presetTimeslots) return;
+    const timeslotsFragment = document.createDocumentFragment();
+
+    for (const timeslot of settings.presetTimeslots) {
+        if (!isPresetTimeSlot(timeslot)) return;
+        presetTimeslots.push(timeslot);
+        let option = document.createElement("option");
+        option.text = timeslot.name;
+        option.value = (presetTimeslots.length - 1).toString();
+        timeslotsFragment.appendChild(option);
+    }
+
+    (
+        document.getElementById("DTimeSlot") as HTMLSelectElement | null
+    )?.replaceChildren(timeslotsFragment);
+};
+
 document.addEventListener("DOMContentLoaded", async () => {
     const printButton = document.getElementById("print-button");
     if (!printButton) return;
     printButton.addEventListener("click", printView);
 
     settings = await (await fetch("../settings.json")).json();
+
+    setDefaults(settings);
 
     timetableOptions.name = settings.defaultName;
 

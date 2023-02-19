@@ -34,8 +34,8 @@
                     </div>
                 </div>
                 <div class="form">
-                    <div>
-                        <h1>Time slots</h1>
+                    <h1>Time slots</h1>
+                    <div class="form-content">
                         <form onsubmit="return addTimeSlot(event)">
                             <label>Start time</label>
                             <input required type="time" id="TSStart" />
@@ -57,9 +57,25 @@
                                 Add
                             </button>
                         </form>
+                        <p>or</p>
+                        <form onsubmit="return addDefaultTimeSlot(event)">
+                            <label>Use default</label>
+                            <br />
+                            <select id="DTimeSlot" required></select>
+                            <span
+                                id="DTSTimeError"
+                                style="display: none"
+                                class="form-error"
+                            ></span>
+                            <br />
+                            <br />
+                            <button type="submit">
+                                <i class="bi bi-plus-circle"></i>
+                                Add
+                            </button>
+                        </form>
                     </div>
                 </div>
-
                 <div class="form">
                     <div>
                         <h1>Tasks</h1>

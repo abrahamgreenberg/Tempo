@@ -140,16 +140,24 @@ body,
     min-height: 78vh;
 }
 
-/* TODO: Format rest of page */
 .form {
     margin-top: var(--margin-separator);
-    display: flex;
-    justify-content: left;
-    align-items: center;
     border: var(--border-width) solid var(--border-color);
     border-radius: var(--border-radius-1);
     padding: 1em;
     font-weight: lighter;
+}
+
+.form-content {
+    display: flex;
+    justify-content: left;
+    align-items: center;
+}
+
+.form-content form,
+.form-content p {
+    margin-right: var(--margin-separator);
+    max-width: 40%;
 }
 
 h1 {
