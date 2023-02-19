@@ -22,8 +22,24 @@
             "length": 60
         },
         {
+            "name": "Math",
+            "length": 60
+        },
+        {
+            "name": "Physics",
+            "length": 60
+        },
+        {
+            "name": "Economics",
+            "length": 60
+        },
+        {
             "name": "Trombone",
             "length": 60
+        },
+        {
+            "name": "HW",
+            "length": 30
         }
     ]
 }
