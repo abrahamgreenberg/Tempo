@@ -898,6 +898,7 @@ interface InputCall {
     prompt: string;
     type: "string" | "integer" | "time";
     value?: string;
+    required?: boolean;
 }
 
 const popupInput = async (
@@ -913,30 +914,41 @@ const popupInput = async (
     input.select();
     input.value = params.value ? params.value : "";
 
-    const inputPromise: Promise<string | number> = new Promise((resolve) => {
-        input.addEventListener("keydown", (e: KeyboardEvent) => {
-            if (e.key === "Enter") {
-                if (params.type === "integer") {
-                    const value = parseInt(input.value);
-                    if (isNaN(value)) return;
-                    else return resolve(Math.abs(value));
-                } else if (params.type === "time") {
-                    return resolve(stimeToInt(input.value));
-                } else {
-                    return resolve(input.value);
+    const inputPromise: Promise<string | number | false> = new Promise(
+        (resolve) => {
+            input.addEventListener("keydown", (e: KeyboardEvent) => {
+                if (e.key === "Enter") {
+                    if (params.required === true && input.value.length === 0)
+                        return;
+                    if (params.type === "integer") {
+                        const value = parseInt(input.value);
+                        if (isNaN(value)) return;
+                        else return resolve(Math.abs(value));
+                    } else if (params.type === "time") {
+                        return resolve(stimeToInt(input.value));
+                    } else {
+                        return resolve(input.value);
+                    }
+                } else if (e.key === "Escape") {
+                    return resolve(false);
                 }
-            }
-        });
-    });
+            });
+        }
+    );
     return inputPromise;
 };
 
-const getInputs = async (inputs: InputCall[]): Promise<(string | number)[]> => {
+const getInputs = async (
+    inputs: InputCall[]
+): Promise<(string | number)[] | false> => {
     const returnArray = [];
 
     for (const inputCall of inputs) {
         const input = await popupInput(inputCall);
-        if (input === false) return [];
+        if (input === false) {
+            togglePopup(false);
+            return false;
+        }
         returnArray.push(input);
     }
 
@@ -973,18 +985,23 @@ const handleEdit = async (button: HTMLButtonElement) => {
                 prompt: "Name",
                 type: "string",
                 value: timeslot.name,
+                required: true,
             },
             {
                 prompt: "Start",
                 type: "time",
                 value: intToStime(timeslot.start),
+                required: true,
             },
             {
                 prompt: "End",
                 type: "time",
                 value: intToStime(timeslot.end),
+                required: true,
             },
         ]);
+
+        if (newValues === false) return;
 
         timeslot.name = newValues[0] as string;
         timeslot.start = newValues[1] as number;
@@ -998,13 +1015,17 @@ const handleEdit = async (button: HTMLButtonElement) => {
                 prompt: "Name",
                 type: "string",
                 value: task.name,
+                required: true,
             },
             {
                 prompt: "Length (minutes)",
                 type: "integer",
                 value: task.length.toString(),
+                required: true,
             },
         ]);
+
+        if (newValues === false) return;
 
         task.name = newValues[0] as string;
         task.length = newValues[1] as number;
