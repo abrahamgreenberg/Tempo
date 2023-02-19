@@ -1,0 +1,62 @@
+{
+    "type": "object",
+    "properties": {
+        "defaultName": {
+            "type": "string"
+        },
+        "listViewTimeslot": {
+            "type": "string"
+        },
+        "listViewTask": {
+            "type": "string"
+        },
+        "printViewTimeslot": {
+            "type": "string"
+        },
+        "printViewTask": {
+            "type": "string"
+        },
+        "presetTimeslots": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string"
+                    },
+                    "start": {
+                        "type": "integer"
+                    },
+                    "end": {
+                        "type": "integer"
+                    }
+                },
+                "required": ["name", "start", "end"]
+            }
+        },
+        "presetTasks": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string"
+                    },
+                    "length": {
+                        "type": "integer"
+                    }
+                },
+                "required": ["name", "length"]
+            }
+        }
+    },
+    "required": [
+        "defaultName",
+        "listViewTimeslot",
+        "listViewTask",
+        "printViewTimeslot",
+        "printViewTask",
+        "presetTimeslots",
+        "presetTasks"
+    ]
+}
