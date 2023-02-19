@@ -675,11 +675,9 @@ const printView = async () => {
     regenerate.className = "no-print";
     regenerate.addEventListener("click", () => {
         const lists = newWindow.document.getElementsByTagName("ol");
-        console.log(lists);
         for (const list of lists) {
             for (const elem of list.children) {
                 const div = elem.firstChild as HTMLElement;
-                console.log(div.classList);
                 div.classList.remove(...printViewColours);
                 const color = selectColor(prevColor1, prevColor2);
                 div.classList.add(color);
