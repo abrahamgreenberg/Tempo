@@ -26,7 +26,7 @@ A project that automatically generates my plan for the next day
 1.  ~~Fix bug in removing values from dropdown when clearing lists~~
 1.  ~~Day is undefined when I change it~~
 1.  ~~Better colour algorithm in the print view~~
-1.  Option to regenerate colours in print view
+1.  ~~Option to regenerate colours in print view~~
 1.  Presets
 1.  Editing tasks
 1.  Copying tasks

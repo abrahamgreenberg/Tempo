@@ -64,3 +64,10 @@ input {
     background-color: red;
     outline: 1px solid red;
 }
+
+@media print {
+    .no-print,
+    .no-print * {
+        display: none !important;
+    }
+}

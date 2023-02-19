@@ -42,6 +42,8 @@ enum Constants {
 </svg>`,
 }
 
+const printViewColours = ["red", "orange", "yellow", "blue", "green"];
+
 const isTimeslot = (obj: any): obj is TimeSlot => {
     return (
         obj &&
@@ -561,7 +563,7 @@ const randomElement = <T>(array: T[]) => {
 };
 
 const selectColor = (prevColor1: string | null, prevColor2: string | null) => {
-    const colors = ["red", "orange", "yellow", "blue", "green"];
+    const colors = printViewColours;
     let probs = new Array(colors.length).fill(1);
 
     if (prevColor1) {
@@ -667,6 +669,26 @@ const printView = async () => {
     const list = newWindow.document.createElement("ol");
     list.replaceChildren(listItems);
     fragment.appendChild(list);
+
+    const regenerate = newWindow.document.createElement("button");
+    regenerate.innerText = "Regenerate colours";
+    regenerate.className = "no-print";
+    regenerate.addEventListener("click", () => {
+        const lists = newWindow.document.getElementsByTagName("ol");
+        console.log(lists);
+        for (const list of lists) {
+            for (const elem of list.children) {
+                const div = elem.firstChild as HTMLElement;
+                console.log(div.classList);
+                div.classList.remove(...printViewColours);
+                const color = selectColor(prevColor1, prevColor2);
+                div.classList.add(color);
+                prevColor2 = prevColor1;
+                prevColor1 = color;
+            }
+        }
+    });
+    fragment.appendChild(regenerate);
 
     newWindow.document.body.replaceChildren(fragment);
 
