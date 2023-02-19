@@ -16,5 +16,14 @@
             "end": 1290
         }
     ],
-    "presetTasks": []
+    "presetTasks": [
+        {
+            "name": "Computer science",
+            "length": 60
+        },
+        {
+            "name": "Trombone",
+            "length": 60
+        }
+    ]
 }

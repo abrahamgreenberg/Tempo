@@ -77,8 +77,8 @@
                     </div>
                 </div>
                 <div class="form">
-                    <div>
-                        <h1>Tasks</h1>
+                    <h1>Tasks</h1>
+                    <div class="form-content">
                         <form onsubmit="addTask(event)">
                             <label>Time slot </label>
                             <select id="TTimeSlot" required></select>
@@ -107,6 +107,18 @@
                             <label>Name</label>
                             <input required type="text" id="TName" />
                             <br /><br />
+                            <button type="submit">
+                                <i class="bi bi-plus-circle"></i>
+                                Add
+                            </button>
+                        </form>
+                        <p>or</p>
+                        <form onsubmit="return addDefaultTask(event)">
+                            <label>Use default</label>
+                            <br />
+                            <select id="DTask" required></select>
+                            <br />
+                            <br />
                             <button type="submit">
                                 <i class="bi bi-plus-circle"></i>
                                 Add

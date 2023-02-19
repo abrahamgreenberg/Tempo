@@ -15,6 +15,10 @@ interface PresetTimeSlot extends PresetItem {
     end: number;
 }
 
+interface PresetTask extends PresetItem {
+    length: number;
+}
+
 interface TimeSlot extends Item {
     start: number;
     end: number;
@@ -89,6 +93,15 @@ const isTask = (obj: any): obj is Task => {
     );
 };
 
+const isPresetTask = (obj: any): obj is PresetTask => {
+    return (
+        obj &&
+        typeof obj === "object" &&
+        typeof obj.name === "string" &&
+        typeof obj.length === "number"
+    );
+};
+
 const isSave = (obj: any): obj is Save => {
     return (
         obj &&
@@ -110,6 +123,7 @@ const timetableOptions: TimetableOptions = {
 let timeSlots: TimeSlot[] = [];
 let presetTimeslots: PresetTimeSlot[] = [];
 let allTasks: Task[] = [];
+let presetTasks: PresetTask[] = [];
 const taskTimeslots: Map<number, number[]> = new Map();
 
 const icon = (icon: string) => {
@@ -355,6 +369,32 @@ const addTask = (e: SubmitEvent & { target: HTMLFormElement }) => {
 
     // @ts-ignore
     vals.TTimeSlot.value = timeslotId;
+
+    renderList();
+    return true;
+};
+
+const addDefaultTask = (e: SubmitEvent & { target: HTMLFormElement }) => {
+    e.preventDefault();
+    // @ts-ignore
+    const timeslotId = +document.getElementById("TTimeSlot").value;
+    const id = parseInt(e.target.DTask.value as string);
+
+    const presetTask = presetTasks[id];
+
+    const timeslotTasks = taskTimeslots.get(timeslotId) ?? [];
+
+    const task = allTasks.push({
+        id: allTasks.length,
+        name: presetTask.name,
+        length: presetTask.length,
+        order: timeslotTasks.length,
+        timeslotId,
+        deleted: false,
+    });
+
+    timeslotTasks.push(task - 1);
+    taskTimeslots.set(timeslotId, timeslotTasks);
 
     renderList();
     return true;
@@ -972,8 +1012,8 @@ const testData = () => {
     loadSave(testSave);
 };
 
-const setDefaults = (settings: any) => {
-    if (!settings.presetTimeslots) return;
+const setPresets = (settings: any) => {
+    if (!settings.presetTimeslots || !settings.presetTasks) return;
     const timeslotsFragment = document.createDocumentFragment();
 
     for (const timeslot of settings.presetTimeslots) {
@@ -988,6 +1028,20 @@ const setDefaults = (settings: any) => {
     (
         document.getElementById("DTimeSlot") as HTMLSelectElement | null
     )?.replaceChildren(timeslotsFragment);
+
+    const tasksFragment = document.createDocumentFragment();
+    for (const task of settings.presetTasks) {
+        if (!isPresetTask(task)) continue;
+        presetTasks.push(task);
+        let option = document.createElement("option");
+        option.text = task.name;
+        option.value = (presetTasks.length - 1).toString();
+        tasksFragment.appendChild(option);
+    }
+
+    (
+        document.getElementById("DTask") as HTMLSelectElement | null
+    )?.replaceChildren(tasksFragment);
 };
 
 document.addEventListener("DOMContentLoaded", async () => {
@@ -997,7 +1051,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     settings = await (await fetch("../settings.json")).json();
 
-    setDefaults(settings);
+    setPresets(settings);
 
     timetableOptions.name = settings.defaultName;
 
