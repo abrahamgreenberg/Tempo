@@ -873,6 +873,78 @@ const clear = () => {
     timeline.parentElement.style.display = "flex";
 };
 
+const getPopup = () => {
+    return document.getElementById("popup");
+};
+
+const setPrompt = (text: string) => {
+    const prompt = document.getElementById("popup-prompt");
+    if (prompt) prompt.innerText = text;
+};
+
+const isToggled = (popup: HTMLElement) => {
+    return popup.style.direction === "flex";
+};
+
+const togglePopup = (state?: boolean, popup_?: HTMLElement) => {
+    const popup = popup_ !== undefined ? popup_ : getPopup();
+    if (popup === null) return;
+    if ((isToggled(popup) && !state) || state === false)
+        popup.style.display = "none";
+    else popup.style.display = "flex";
+};
+
+interface InputCall {
+    prompt: string;
+    type: "string" | "integer" | "time";
+    value?: string;
+}
+
+const popupInput = async (
+    params: InputCall
+): Promise<number | string | false> => {
+    const popup = getPopup();
+    if (!popup) return false;
+    togglePopup(true, popup);
+    setPrompt(params.prompt);
+
+    const input = document.getElementById("popup-input");
+    if (input === null || !(input instanceof HTMLInputElement)) return false;
+    input.select();
+    input.value = params.value ? params.value : "";
+
+    const inputPromise: Promise<string | number> = new Promise((resolve) => {
+        input.addEventListener("keydown", (e: KeyboardEvent) => {
+            if (e.key === "Enter") {
+                if (params.type === "integer") {
+                    const value = parseInt(input.value);
+                    if (isNaN(value)) return;
+                    else return resolve(Math.abs(value));
+                } else if (params.type === "time") {
+                    return resolve(stimeToInt(input.value));
+                } else {
+                    return resolve(input.value);
+                }
+            }
+        });
+    });
+    return inputPromise;
+};
+
+const getInputs = async (inputs: InputCall[]): Promise<(string | number)[]> => {
+    const returnArray = [];
+
+    for (const inputCall of inputs) {
+        const input = await popupInput(inputCall);
+        if (input === false) return [];
+        returnArray.push(input);
+    }
+
+    togglePopup(false);
+
+    return returnArray;
+};
+
 const handleDelete = (button: HTMLButtonElement) => {
     const parent = traverseUp(button, 4);
     if (!parent) return;
@@ -886,6 +958,58 @@ const handleDelete = (button: HTMLButtonElement) => {
     }
 
     renderList();
+};
+
+const handleEdit = async (button: HTMLButtonElement) => {
+    const parent = traverseUp(button, 4);
+    if (!parent) return;
+    const id = getId(parent.id);
+
+    if (parent.id.startsWith("timeslot")) {
+        const timeslot = timeSlots[id];
+
+        const newValues = await getInputs([
+            {
+                prompt: "Name",
+                type: "string",
+                value: timeslot.name,
+            },
+            {
+                prompt: "Start",
+                type: "time",
+                value: intToStime(timeslot.start),
+            },
+            {
+                prompt: "End",
+                type: "time",
+                value: intToStime(timeslot.end),
+            },
+        ]);
+
+        timeslot.name = newValues[0] as string;
+        timeslot.start = newValues[1] as number;
+        timeslot.end = newValues[2] as number;
+        renderList();
+    } else {
+        const task = allTasks[id];
+
+        const newValues = await getInputs([
+            {
+                prompt: "Name",
+                type: "string",
+                value: task.name,
+            },
+            {
+                prompt: "Length (minutes)",
+                type: "integer",
+                value: task.length.toString(),
+            },
+        ]);
+
+        task.name = newValues[0] as string;
+        task.length = newValues[1] as number;
+        renderList();
+    }
 };
 
 const updateFormNameAndDay = () => {

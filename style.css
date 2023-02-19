@@ -226,3 +226,36 @@ input::-webkit-inner-spin-button {
 #load-button-text {
     font-size: 80%;
 }
+
+.popup {
+    display: none;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: var(--theme-blue-2);
+    border: 1px solid var(--theme-blue-1);
+    padding: 20px;
+    color: var(--theme-white);
+    min-width: 50%;
+    max-width: 80%;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.popup * {
+    margin-bottom: 1em;
+}
+
+.popup input {
+    background-color: var(--theme-blue-1);
+    min-width: 80%;
+    height: 1.5em;
+    display: inline-block;
+    border: solid 1px black;
+    text-align: center;
+    justify-content: center;
+    align-items: center;
+    font-weight: normal;
+}
