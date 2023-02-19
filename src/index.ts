@@ -55,7 +55,7 @@ enum Constants {
 </svg>`,
 }
 
-const printViewColours = ["red", "orange", "yellow", "blue", "green"];
+const printViewColors = ["red", "orange", "yellow", "blue", "green"];
 
 const isTimeslot = (obj: any): obj is TimeSlot => {
     return (
@@ -669,7 +669,7 @@ const randomElement = <T>(array: T[]) => {
 };
 
 const selectColor = (prevColor1: string | null, prevColor2: string | null) => {
-    const colors = printViewColours;
+    const colors = printViewColors;
     let probs = new Array(colors.length).fill(1);
 
     if (prevColor1) {
@@ -784,7 +784,7 @@ const printView = async () => {
         for (const list of lists) {
             for (const elem of list.children) {
                 const div = elem.firstChild as HTMLElement;
-                div.classList.remove(...printViewColours);
+                div.classList.remove(...printViewColors);
                 const color = selectColor(prevColor1, prevColor2);
                 div.classList.add(color);
                 prevColor2 = prevColor1;
