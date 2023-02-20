@@ -5,24 +5,23 @@
     "main": "main.js",
     "scripts": {
         "build": "tsc",
-        "serve": "http-server --proxy http://localhost:8080?",
         "dev": "nodemon --watch src/ -e ts --exec \"pnpm run build\"",
         "electron-build": "electron-builder",
-        "electron": "electron main.js"
+        "electron": "tsc && electron dist/app.js"
     },
     "keywords": [],
     "author": "",
     "license": "ISC",
     "devDependencies": {
+        "@types/electron": "^1.6.10",
         "electron": "^23.1.0",
         "electron-builder": "^23.6.0",
+        "nodemon": "^2.0.20",
         "typescript": "^4.9.4"
     },
     "dependencies": {
         "@types/node": "^18.11.18",
         "bootstrap-icons": "^1.10.3",
-        "http-server": "^14.1.1",
-        "nodemon": "^2.0.20",
         "ts-node-dev": "^2.0.0"
     }
 }
