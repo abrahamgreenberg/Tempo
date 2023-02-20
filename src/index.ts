@@ -250,15 +250,17 @@ const addIcons = (elem: HTMLElement, ...iconIds: string[]) => {
 
 const validateTimes = (
     start: number | false,
-    end: number | false
+    end: number | false,
+    edit = false
 ): string | [number, number] => {
     if (start === false || end === false) return "Invalid times";
 
     if (start > end) return "Start can't be later than the end";
 
-    for (const slot of timeSlots)
-        if (start < slot.end && end > slot.start && !slot.deleted)
-            return "There is already another time slot in those times!";
+    if (!edit)
+        for (const slot of timeSlots)
+            if (start < slot.end && end > slot.start && !slot.deleted)
+                return "There is already another time slot in those times!";
 
     return [start, end];
 };
@@ -1028,11 +1030,9 @@ const handleEdit = async (button: HTMLButtonElement) => {
         const start = newValues[1] as number;
         const end = newValues[2] as number;
 
-        if (typeof validateTimes(start, end) === "string") return;
+        if (typeof validateTimes(start, end, true) === "string") return;
         timeslot.start = start;
         timeslot.end = end;
-
-        renderList();
     } else {
         const task = allTasks[id];
 
@@ -1055,8 +1055,8 @@ const handleEdit = async (button: HTMLButtonElement) => {
 
         task.name = newValues[0] as string;
         task.length = newValues[1] as number;
-        renderList();
     }
+    renderList();
 };
 
 const updateFormNameAndDay = () => {
