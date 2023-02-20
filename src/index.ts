@@ -468,8 +468,12 @@ const getList = (
 ) => {
     let fragment = document.createDocumentFragment();
 
+    let renderedTimeslots = 0;
+
     for (const timeSlot of timeSlots) {
         if (timeSlot.deleted) continue;
+
+        renderedTimeslots++;
 
         const buttonIcon = (name: string, iconName: string) => {
             return `<button class="${name}-button" onclick="handle${
@@ -537,6 +541,13 @@ const getList = (
         timeSlots[timeSlot.id].finalEnd = currentTime;
     }
 
+    if (renderedTimeslots === 0) {
+        const noElem = document.createElement("h2");
+        noElem.id = "noelem";
+        noElem.innerText = "You have no tasks";
+        fragment.replaceChildren(noElem);
+    }
+
     return fragment;
 };
 
@@ -562,9 +573,12 @@ const renderList = () => {
 
     const timeline = document.getElementById("timeline");
     if (!timeline) return;
+    const noElem = list.firstElementChild?.id === "noelem";
     timeline.replaceChildren(list);
     if (!timeline.parentElement) return;
-    timeline.parentElement.style.display = "block";
+    if (timeline.parentElement.style.display !== "block" && !noElem)
+        timeline.parentElement.style.display = "block";
+    else if (noElem) timeline.parentElement.style.display = "flex";
 };
 
 const renderTimeslotDropdown = () => {
@@ -876,14 +890,6 @@ const clear = () => {
     taskTimeslots.clear();
     renderList();
     renderTimeslotDropdown();
-    const timeline = document.getElementById("timeline");
-    if (!timeline) return;
-    const noElem = document.createElement("h2");
-    noElem.id = "noelem";
-    noElem.innerText = "You have no tasks";
-    timeline.replaceChildren(noElem);
-    if (!timeline.parentElement) return;
-    timeline.parentElement.style.display = "flex";
 };
 
 const getPopup = () => {
