@@ -19,7 +19,11 @@
     ],
     "presetTasks": [
         {
-            "name": "Computer science",
+            "name": "Computer science coursework",
+            "length": 60
+        },
+        {
+            "name": "Computer science revision",
             "length": 60
         },
         {
@@ -40,6 +44,14 @@
         },
         {
             "name": "HW",
+            "length": 30
+        },
+        {
+            "name": "Dinner",
+            "length": 30
+        },
+        {
+            "name": "Lunch",
             "length": 30
         }
     ]
