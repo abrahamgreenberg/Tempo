@@ -157,8 +157,13 @@ const removeErrors = (...elementIDs: string[]) => {
 };
 
 const stimeToInt = (string: string) => {
-    const [hours, minutes] = string.split(":");
-    return +hours * 60 + +minutes;
+    const split = string.split(":");
+    if (split.length !== 2) return false;
+    const hours = Math.abs(parseInt(split[0]));
+    const mins = Math.abs(parseInt(split[1]));
+    if (isNaN(hours) || isNaN(mins)) return false;
+    if (hours > 23 || mins > 60) return false;
+    return hours * 60 + mins;
 };
 
 const intToStime = (int: number) => {
@@ -243,6 +248,21 @@ const addIcons = (elem: HTMLElement, ...iconIds: string[]) => {
     elem.innerHTML = `${icons}&nbsp;${elem.innerHTML}`;
 };
 
+const validateTimes = (
+    start: number | false,
+    end: number | false
+): string | [number, number] => {
+    if (start === false || end === false) return "Invalid times";
+
+    if (start > end) return "Start can't be later than the end";
+
+    for (const slot of timeSlots)
+        if (start < slot.end && end > slot.start && !slot.deleted)
+            return "There is already another time slot in those times!";
+
+    return [start, end];
+};
+
 const addTimeSlot = (e: SubmitEvent & { target: HTMLFormElement }) => {
     e.preventDefault();
     const error = (message: string, ...elements: string[]) => {
@@ -256,23 +276,16 @@ const addTimeSlot = (e: SubmitEvent & { target: HTMLFormElement }) => {
     // @ts-ignore
     let end = stimeToInt(e.target.elements.TSEnd.value as string);
 
-    if (start > end)
-        return error("Start can't be later than the end", "TimeError");
-
-    for (const slot of timeSlots)
-        if (start < slot.end && end > slot.start && !slot.deleted)
-            return error(
-                "There is already another time slot in those times!",
-                "TimeError"
-            );
+    const timesValid = validateTimes(start, end);
+    if (typeof timesValid === "string") return error(timesValid, "TimeError");
 
     timeSlots.push({
         id: timeSlots.length,
         // @ts-ignore
         name: e.target.elements.TSName.value,
-        start,
-        end,
-        finalEnd: end,
+        start: timesValid[0],
+        end: timesValid[1],
+        finalEnd: timesValid[1],
         deleted: false,
     });
 
@@ -1004,8 +1017,13 @@ const handleEdit = async (button: HTMLButtonElement) => {
         if (newValues === false) return;
 
         timeslot.name = newValues[0] as string;
-        timeslot.start = newValues[1] as number;
-        timeslot.end = newValues[2] as number;
+        const start = newValues[1] as number;
+        const end = newValues[2] as number;
+
+        if (typeof validateTimes(start, end) === "string") return;
+        timeslot.start = start;
+        timeslot.end = end;
+
         renderList();
     } else {
         const task = allTasks[id];

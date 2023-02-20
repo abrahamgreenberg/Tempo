@@ -29,10 +29,10 @@ A project that automatically generates my plan for the next day
 1.  ~~Option to regenerate colors in print view~~
 1.  ~~Presets~~
 1.  ~~Editing tasks~~
-1.  Validate inputs when editing
-    -   Need to validate time inputs so they are in valid string input
-    -   Need to validate times to make sure timeslots do not overlap
-        -   Perhaps i can make a function to validate timeslot times with a given start and end, so code is not repeated from add time slot
+1.  ~~Validate inputs when editing~~
+    -   ~~Need to validate time inputs so they are in valid string input~~
+    -   ~~Need to validate times to make sure timeslots do not overlap~~
+        -   ~~Perhaps i can make a function to validate timeslot times with a given start and end, so code is not repeated from add time slot~~
 1.  Copying tasks
 1.  Change save name to the name of the timetable
 1.  Auto close print view when printed
