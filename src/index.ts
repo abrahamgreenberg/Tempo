@@ -390,8 +390,10 @@ const addTask = (e: SubmitEvent & { target: HTMLFormElement }) => {
 const addDefaultTask = (e: SubmitEvent & { target: HTMLFormElement }) => {
     e.preventDefault();
     // @ts-ignore
-    const timeslotId = +document.getElementById("TTimeSlot").value;
+    const timeslotId = parseInt(document.getElementById("TTimeSlot").value);
     const id = parseInt(e.target.DTask.value as string);
+
+    if (isNaN(timeslotId)) return;
 
     const presetTask = presetTasks[id];
 
