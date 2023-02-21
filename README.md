@@ -41,5 +41,5 @@ A project that automatically generates my plan for the next day
 1.  Auto close print view when printed
 1.  Fix time not wrapping when above 24, e.g going from 23:30 -> 00:30 instead of 24:30 if task is over length
 1.  Implement webpack
-1.  Make icon: idea, three squares
+1.  Improve icon: out of proportion
 1.  properly configure electron
