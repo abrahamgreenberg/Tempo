@@ -1230,7 +1230,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     const now = new Date();
     let day = now.getDay();
 
-    if (now.getHours() - now.getTimezoneOffset() / 60 >= 18) day++;
+    if (now.getHours() - now.getTimezoneOffset() / 60 > 18) day++;
     if (day === 7) day = 0;
     timetableOptions.day = day;
 
