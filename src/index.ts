@@ -1091,6 +1091,7 @@ const loadSave = (save: Save) => {
 };
 
 const testData = () => {
+    if (settings.development !== true) return;
     const testSave: Save = {
         name: "Test",
         day: 1,

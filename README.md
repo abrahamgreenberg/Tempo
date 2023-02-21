@@ -40,3 +40,5 @@ A project that automatically generates my plan for the next day
 1.  Change save name to the name of the timetable
 1.  Auto close print view when printed
 1.  Implement webpack
+1.  Make icon: idea, three squares
+1.  properly configure electron
