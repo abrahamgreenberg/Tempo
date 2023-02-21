@@ -485,11 +485,20 @@ const getList = (
             }(this)">${icon(iconName)}</button>`;
         };
 
-        const buttons = `<div class="buttons">
-        ${buttonIcon("copy", "clipboard-plus")}
-        ${buttonIcon("edit", "pencil-square")}
-        ${buttonIcon("delete", "trash-fill")}
-        </div>`;
+        const buttons = (...buttons: [string, string][]) => {
+            let string = `<div class="buttons">`;
+            for (const button of [
+                ...buttons,
+                ...[
+                    ["edit", "pencil-square"],
+                    ["delete", "trash-fill"],
+                ],
+            ]) {
+                string += buttonIcon(button[0], button[1]);
+            }
+            string += `</div>`;
+            return string;
+        };
 
         if (template.timeslotInfo) {
             const tsElem = createTimeslotElement(
@@ -498,7 +507,7 @@ const getList = (
                 timeSlot,
                 [
                     ["end", intToStime(timeSlot.end)],
-                    ["buttons", buttons],
+                    ["buttons", buttons()],
                 ],
                 timeslotCallBack
             );
@@ -531,7 +540,7 @@ const getList = (
                 ["name", task.name],
                 ["start", `${icon("clock-fill")} ${intToStime(currentTime)}`],
                 ["end", intToStime((currentTime += task.length))],
-                ["buttons", buttons],
+                ["buttons", buttons(["copy", "clipboard-plus"])],
                 ["clock", Constants.iconsClock],
                 ["arrows", Constants.iconsArrow],
                 ["square", Constants.iconsSquare]
@@ -986,6 +995,35 @@ const getInputs = async (
     togglePopup(false);
 
     return returnArray;
+};
+
+const handleCopy = (button: HTMLButtonElement) => {
+    const parent = traverseUp(button, 4);
+    if (!parent) return;
+    const id = getId(parent.id);
+    const task = allTasks[id];
+    let timeslotTasks = getTimeslotTasks(task.timeslotId);
+    const newTask: Task = {
+        name: task.name,
+        deleted: false,
+        id: allTasks.length,
+        length: task.length,
+        order: task.order + 1,
+        timeslotId: task.timeslotId,
+    };
+
+    allTasks.push(newTask);
+
+    for (let i = task.order + 1; i < timeslotTasks.length; i++) {
+        timeslotTasks[i].order++;
+    }
+
+    timeslotTasks.splice(task.order + 1, 0, newTask);
+
+    console.log(timeslotTasks);
+
+    updateTimeslotTasks(task.timeslotId, timeslotTasks);
+    renderList();
 };
 
 const handleDelete = (button: HTMLButtonElement) => {
