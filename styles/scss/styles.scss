@@ -1,4 +1,7 @@
-$bootstrap-icons-font-src: url("../../node_modules/bootstrap-icons/font/fonts/bootstrap-icons.woff2") format("woff2"), url("../../node_modules/bootstrap-icons/font/fonts/bootstrap-icons.woff") format("woff");
+$bootstrap-icons-font-src: url("../../node_modules/bootstrap-icons/font/fonts/bootstrap-icons.woff2")
+        format("woff2"),
+    url("../../node_modules/bootstrap-icons/font/fonts/bootstrap-icons.woff")
+        format("woff");
 
 @import "../../node_modules/bootstrap-icons/font/bootstrap-icons.scss";
 @import "./vars.scss";
@@ -84,16 +87,6 @@ body,
     height: 1.5em;
 }
 
-.timeline-slot {
-    .timeline-content {
-        .buttons {
-            .copy-button {
-                background-color: $theme-blue-1;
-            }
-        }
-    }
-}
-
 .timeline-task {
     .timeline-content {
         .buttons {
@@ -116,21 +109,17 @@ body,
         background-color: $theme-red-2;
     }
 
-    .task-error{
-        .timeline-content{
-            .buttons{
-                .delete-button{
-                    background-color: $theme-white;
-                    color: $theme-red-1;
-                }
-            }
-        }
-    }
-
-    button{
-        &:hover{
+    button {
+        &:hover {
             background-image: $hover-dark;
         }
+    }
+}
+
+.task-error {
+    *.delete-button {
+        background-color: $theme-white;
+        color: $theme-red-1;
     }
 }
 
@@ -161,11 +150,11 @@ body,
     align-items: center;
 }
 
-.form-content{
-    form, p{
+.form-content {
+    form,
+    p {
         margin-right: $margin-separator;
         max-width: 40%;
-
     }
 }
 
