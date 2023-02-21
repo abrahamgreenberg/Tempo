@@ -798,7 +798,7 @@ const printView = async () => {
         }
     );
 
-    const css = await fetch("styles/css/print.css");
+    const css = await fetch("../print.css");
     const styleSheet = newWindow.document.createElement("style");
     styleSheet.innerHTML = await css.text();
     newWindow.document.head.appendChild(styleSheet);
@@ -826,6 +826,8 @@ const printView = async () => {
     fragment.appendChild(regenerate);
 
     newWindow.document.body.replaceChildren(fragment);
+
+    newWindow.print();
 };
 
 const setDefaultDays = (select: HTMLSelectElement) => {
@@ -1077,8 +1079,6 @@ const loadSave = (save: Save) => {
     timeSlots = save.timeslots;
     allTasks = save.tasks;
 
-    taskTimeslots.clear();
-
     for (const task of save.tasks) {
         const timeslotTasks = taskTimeslots.get(task.timeslotId) ?? [];
         timeslotTasks[task.order] = task.id;
@@ -1091,7 +1091,6 @@ const loadSave = (save: Save) => {
 };
 
 const testData = () => {
-    if (settings.development !== true) return;
     const testSave: Save = {
         name: "Test",
         day: 1,
@@ -1221,7 +1220,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (!printButton) return;
     printButton.addEventListener("click", printView);
 
-    settings = await (await fetch("settings.json")).json();
+    settings = await (await fetch("../settings.json")).json();
 
     setPresets(settings);
 
