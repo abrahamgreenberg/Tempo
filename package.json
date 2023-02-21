@@ -5,8 +5,8 @@
     "main": "dist/app.js",
     "scripts": {
         "build": "tsc && sass styles/scss:styles/css",
-        "dev": "nodemon --watch src/ -e ts --exec \"pnpm run build\"",
-        "dev-electron": "nodemon --watch src/ -e ts --exec \"pnpm run electron\"",
+        "dev": "nodemon --watch **/* -e ts,scss,json --exec \"pnpm run build\"",
+        "dev-electron": "nodemon --watch **/* -e ts,scss,json --exec \"pnpm run electron\"",
         "electron": "pnpm run build && electron dist/app.js",
         "electron-build": "pnpm run build && electron-builder"
     },
