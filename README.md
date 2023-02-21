@@ -43,3 +43,4 @@ A project that automatically generates my plan for the next day
 1.  Implement webpack
 1.  Improve icon: out of proportion
 1.  properly configure electron
+1.  Keyboard shortcuts
