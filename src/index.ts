@@ -856,10 +856,9 @@ const setDefaultDays = (select: HTMLSelectElement) => {
     }
 };
 
-const setName = (e: SubmitEvent) => {
-    e.preventDefault();
-    // @ts-ignore
-    timetableOptions.name = e.target.elements.GTimetableName.value;
+const setName = (e: KeyboardEvent) => {
+    if (!(e.target instanceof HTMLInputElement)) return;
+    timetableOptions.name = e.target.value;
 };
 
 const setDay = (e: Event) => {
@@ -1108,8 +1107,10 @@ const handleEdit = async (button: HTMLButtonElement) => {
 const updateFormNameAndDay = () => {
     const nameForm = document.getElementById("name");
     if (!nameForm) return;
-    (nameForm.childNodes[3] as HTMLInputElement).value = timetableOptions.name;
-    nameForm.addEventListener("submit", setName);
+    const input = nameForm.childNodes[3] as HTMLInputElement;
+    input.value = timetableOptions.name;
+    // nameForm.addEventListener("keydown", setName);
+    input.addEventListener("keydown", setName);
 
     const dayForm = document.getElementById("day");
     if (!dayForm) return;
