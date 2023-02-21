@@ -25,6 +25,8 @@
         "bootstrap-icons": "^1.10.3"
     },
     "build": {
+        "productName": "School planner",
+        "appId": "me.abisammy.school_planner",
         "directories": {
             "output": "release",
             "buildResources": "dist"
