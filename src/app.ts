@@ -18,9 +18,6 @@ class Main {
         Main.mainWindow = new Main.BrowserWindow({
             width: 1200,
             height: 800,
-            webPreferences: {
-                nodeIntegration: true,
-            },
         });
         Main.mainWindow.on("closed", Main.onClose);
 
@@ -31,6 +28,7 @@ class Main {
             });
         });
         Main.mainWindow.loadFile("../index.html");
+        Main.mainWindow.setMenuBarVisibility(false);
     }
 
     static main(app: Electron.App, browserWindow: typeof BrowserWindow) {
