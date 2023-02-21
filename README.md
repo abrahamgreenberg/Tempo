@@ -40,6 +40,6 @@ A project that automatically generates my plan for the next day
 1.  ~~Change save name to the name of the timetable~~
 1.  ~~Fix time not wrapping when above 24, e.g going from 23:30 -> 00:30 instead of 24:30 if task is over length~~
 1.  ~~Improve icon: out of proportion~~
-1.  properly configure electron
+1.  ~~properly configure electron~~
 1.  Keyboard shortcuts
 1.  Implement webpack
