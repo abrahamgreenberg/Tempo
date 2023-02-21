@@ -70,4 +70,10 @@ input {
     .no-print * {
         display: none !important;
     }
+
+    *{
+        print-color-adjust: exact !important;
+        -webkit-print-color-adjust: exact !important;
+
+    }
 }
