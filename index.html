@@ -53,7 +53,7 @@
                             <label>Name </label>
                             <input required type="text" id="TSName" />
                             <br /><br />
-                            <button type="submit">
+                            <button type="submit" data-shortcut="_{">
                                 <i class="bi bi-plus-circle"></i>
                                 Add
                             </button>
@@ -70,7 +70,7 @@
                             ></span>
                             <br />
                             <br />
-                            <button type="submit">
+                            <button type="submit" data-shortcut="[">
                                 <i class="bi bi-plus-circle"></i>
                                 Add
                             </button>
@@ -108,7 +108,7 @@
                             <label>Name</label>
                             <input required type="text" id="TName" />
                             <br /><br />
-                            <button type="submit">
+                            <button type="submit" data-shortcut="_}">
                                 <i class="bi bi-plus-circle"></i>
                                 Add
                             </button>
@@ -120,7 +120,7 @@
                             <select id="DTask" required></select>
                             <br />
                             <br />
-                            <button type="submit">
+                            <button type="submit" data-shortcut="]">
                                 <i class="bi bi-plus-circle"></i>
                                 Add
                             </button>
@@ -128,13 +128,20 @@
                     </div>
                 </div>
                 <div class="form" id="managementPanel">
-                    <button id="print-button">Print</button>
-                    <button id="save-button">Save timetable</button>
+                    <button id="print-button" data-shortcut="1">Print</button>
+                    <button id="save-button" data-shortcut="2">
+                        Save timetable
+                    </button>
                     <input type="file" id="load-button" style="display: none" />
-                    <label for="load-button" id="load-button-text"
+                    <label
+                        for="load-button"
+                        data-shortcut="3"
+                        id="load-button-text"
                         ><i class="bi bi-upload"></i>&nbsp;Load timetable</label
                     >
-                    <button id="clear-button">Clear timetable</button>
+                    <button id="clear-button" data-shortcut="4">
+                        Clear timetable
+                    </button>
                 </div>
             </div>
         </div>

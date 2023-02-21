@@ -819,9 +819,7 @@ const printView = async () => {
     const info = newWindow.document.createElement("div");
     info.className = "no-print";
 
-    const regenerate = newWindow.document.createElement("button");
-    regenerate.innerText = "Regenerate colours";
-    regenerate.addEventListener("click", () => {
+    const regenerateColours = () => {
         const lists = newWindow.document.getElementsByTagName("ol");
         for (const list of lists) {
             for (const elem of list.children) {
@@ -833,6 +831,14 @@ const printView = async () => {
                 prevColor1 = color;
             }
         }
+    };
+
+    const regenerate = newWindow.document.createElement("button");
+    regenerate.innerText = "Regenerate colours";
+    regenerate.addEventListener("click", regenerateColours);
+
+    newWindow.document.addEventListener("keydown", (event) => {
+        if (event.key.toLowerCase() === "r") regenerateColours();
     });
 
     info.appendChild(regenerate);
@@ -1265,6 +1271,9 @@ const setPresets = (settings: any) => {
     )?.replaceChildren(tasksFragment);
 };
 
+const shortcutsMap: Map<string, HTMLButtonElement | HTMLLabelElement> =
+    new Map();
+
 document.addEventListener("DOMContentLoaded", async () => {
     const printButton = document.getElementById("print-button");
     if (!printButton) return;
@@ -1300,6 +1309,24 @@ document.addEventListener("DOMContentLoaded", async () => {
     addIcons(printButton, "printer-fill");
     addIcons(saveButton, "save-fill");
     addIcons(clearButton, "x-circle-fill");
+
+    const shortcuts = document.querySelectorAll("[data-shortcut]");
+    for (const shortcut of shortcuts) {
+        if (
+            !(shortcut instanceof HTMLButtonElement) &&
+            !(shortcut instanceof HTMLLabelElement)
+        )
+            continue;
+        shortcutsMap.set(shortcut.getAttribute("data-shortcut"), shortcut);
+    }
+
+    document.addEventListener("keydown", (event) => {
+        const element = shortcutsMap.get(
+            `${event.shiftKey ? "_" : ""}${event.key}`
+        );
+        if (!element || !event.ctrlKey) return;
+        element.click();
+    });
 
     testData();
 });
