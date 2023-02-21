@@ -1,5 +1,6 @@
 {
     "$schema": "./settings.schema.json",
+    "development": false,
     "defaultName": "Timetable",
     "listViewTimeslot": "<div class=\"right\"><h2>%NAME%</h2><div class=\"timeline-time\"><em>%CLOCK% %START% - %END%</em></div></div><div class=\"left\">%BUTTONS%</div>",
     "listViewTask": "<div class=\"right\"><h3>%NAME%</h3><div class=\"timeline-time\">%START% - %END%</div></div><div class=\"left\">%BUTTONS%</div>",

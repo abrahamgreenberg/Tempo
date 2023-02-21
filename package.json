@@ -2,23 +2,48 @@
     "name": "school_planner",
     "version": "1.0.0",
     "description": "",
-    "main": "dist/index.js",
+    "main": "dist/app.js",
     "scripts": {
-        "build": "tsc",
-        "serve": "http-server --proxy http://localhost:8080?",
-        "dev": "nodemon --watch src/ -e ts --exec \"pnpm run build\""
+        "build": "tsc && sass styles/scss:styles/css",
+        "dev": "nodemon --watch src/ -e ts --exec \"pnpm run build\"",
+        "dev-electron": "nodemon --watch src/ -e ts --exec \"pnpm run electron\"",
+        "electron": "pnpm run build && electron dist/app.js",
+        "electron-build": "pnpm run build && electron-builder"
     },
     "keywords": [],
     "author": "",
     "license": "ISC",
     "devDependencies": {
+        "@types/node": "^18.14.0",
+        "electron": "^23.1.0",
+        "electron-builder": "^23.6.0",
+        "nodemon": "^2.0.20",
+        "sass": "^1.58.3",
         "typescript": "^4.9.4"
     },
     "dependencies": {
-        "@types/node": "^18.11.18",
-        "bootstrap-icons": "^1.10.3",
-        "http-server": "^14.1.1",
-        "nodemon": "^2.0.20",
-        "ts-node-dev": "^2.0.0"
+        "bootstrap-icons": "^1.10.3"
+    },
+    "build": {
+        "productName": "School planner",
+        "appId": "me.abisammy.school_planner",
+        "directories": {
+            "output": "release",
+            "buildResources": "dist"
+        },
+        "files": [
+            "**/*",
+            "dist/**/*",
+            "!.github",
+            "!.vs",
+            "!node_modules/*"
+        ],
+        "extraResources": [
+            "*.html",
+            "styles/css/*.css",
+            "settings.json",
+            "dist/index.js",
+            "node_modules/bootstrap-icons/font/fonts/*"
+        ]
     }
 }
