@@ -175,7 +175,7 @@ const intToStime = (int: number) => {
     };
 
     const minutes = int % 60;
-    const hours = (int - minutes) / 60;
+    const hours = ((int - minutes) / 60) % 24;
     return `${doubleDigits(hours)}:${doubleDigits(minutes)}`;
 };
 
