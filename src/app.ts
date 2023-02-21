@@ -1,4 +1,4 @@
-import { app, BrowserWindow } from "electron";
+import { app, BrowserWindow, globalShortcut } from "electron";
 
 class Main {
     static mainWindow: Electron.BrowserWindow;
@@ -14,17 +14,23 @@ class Main {
         Main.mainWindow = null;
     }
 
-    private static async onReady() {
+    private static onReady() {
         Main.mainWindow = new Main.BrowserWindow({
-            width: 800,
-            height: 600,
+            width: 1200,
+            height: 800,
             webPreferences: {
                 nodeIntegration: true,
             },
         });
         Main.mainWindow.on("closed", Main.onClose);
 
-        await Main.mainWindow.loadFile("../index.html");
+        globalShortcut.register("CommandOrControl+P", () => {
+            BrowserWindow.getFocusedWindow().webContents.print({
+                printBackground: true,
+                color: true,
+            });
+        });
+        Main.mainWindow.loadFile("../index.html");
     }
 
     static main(app: Electron.App, browserWindow: typeof BrowserWindow) {

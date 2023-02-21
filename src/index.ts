@@ -798,7 +798,7 @@ const printView = async () => {
         }
     );
 
-    const css = await fetch("print.css");
+    const css = await fetch("styles/css/print.css");
     const styleSheet = newWindow.document.createElement("style");
     styleSheet.innerHTML = await css.text();
     newWindow.document.head.appendChild(styleSheet);
@@ -826,8 +826,6 @@ const printView = async () => {
     fragment.appendChild(regenerate);
 
     newWindow.document.body.replaceChildren(fragment);
-
-    newWindow.print();
 };
 
 const setDefaultDays = (select: HTMLSelectElement) => {
