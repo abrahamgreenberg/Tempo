@@ -807,9 +807,11 @@ const printView = async () => {
     list.replaceChildren(listItems);
     fragment.appendChild(list);
 
+    const info = newWindow.document.createElement("div");
+    info.className = "no-print";
+
     const regenerate = newWindow.document.createElement("button");
     regenerate.innerText = "Regenerate colours";
-    regenerate.className = "no-print";
     regenerate.addEventListener("click", () => {
         const lists = newWindow.document.getElementsByTagName("ol");
         for (const list of lists) {
@@ -823,7 +825,15 @@ const printView = async () => {
             }
         }
     });
-    fragment.appendChild(regenerate);
+
+    info.appendChild(regenerate);
+
+    const desc = newWindow.document.createElement("div");
+    desc.innerHTML = "<p>Press R to reload<br/>Press Control + P to print</p>";
+
+    info.appendChild(desc);
+
+    fragment.appendChild(info);
 
     newWindow.document.body.replaceChildren(fragment);
 };

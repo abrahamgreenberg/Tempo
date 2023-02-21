@@ -1,3 +1,5 @@
+@import "./vars.scss";
+
 html,
 body {
     font-family: "Open Sans", sans-serif;
@@ -58,11 +60,32 @@ h3,
     font-style: italic;
 }
 
-input {
-    border-color: black;
-    border-radius: 0;
-    background-color: red;
-    outline: 1px solid red;
+.no-print {
+    button {
+        color: $theme-white;
+        border-color: rgba(0, 0, 0, 0);
+        border-radius: $border-radius-3;
+        background-color: $theme-blue-2;
+        border-style: solid;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 0.1em;
+    }
+
+    background-color: $theme-blue-1;
+    color: $theme-white;
+    border-radius: $border-radius-1;
+    padding: $margin-separator;
+    width: 20%;
+
+    * {
+        font-size: large;
+    }
+}
+
+#noelem {
+    font-style: italic;
 }
 
 @media print {
@@ -71,9 +94,8 @@ input {
         display: none !important;
     }
 
-    *{
+    * {
         print-color-adjust: exact !important;
         -webkit-print-color-adjust: exact !important;
-
     }
 }

@@ -34,7 +34,7 @@ A project that automatically generates my plan for the next day
     -   ~~Need to validate times to make sure timeslots do not overlap~~
         -   ~~Perhaps i can make a function to validate timeslot times with a given start and end, so code is not repeated from add time slot~~
 1.  ~~Electron~~
-1.  Fix styling for print.scss and information in print.css
+1.  ~~Fix styling for print.scss and information in print.css~~
 1.  Fix styling for delete button on errenous task
 1.  Copying tasks
 1.  Change save name to the name of the timetable
