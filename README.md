@@ -43,3 +43,4 @@ A project that automatically generates my plan for the next day
 1.  ~~properly configure electron~~
 1.  ~~Keyboard shortcuts~~
 1.  ~~Need to include development timetable in settings.json, not hardcoded in~~
+1.  Figure out why printing crashes on linux
