@@ -11,7 +11,7 @@
         "electron-build": "pnpm run build && electron-builder"
     },
     "keywords": [],
-    "author": "",
+    "author": "abisammy <abrahamgreenberg123@gmail.com>",
     "license": "ISC",
     "devDependencies": {
         "@types/node": "^18.14.0",
@@ -45,6 +45,11 @@
             "dist/index.js",
             "node_modules/bootstrap-icons/font/fonts/*"
         ],
-        "icon": "icon.png"
+        "icon": "icon.png",
+        "linux": {
+            "target": [
+                "deb"
+            ]
+        }
     }
 }
