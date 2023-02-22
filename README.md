@@ -42,3 +42,4 @@ A project that automatically generates my plan for the next day
 1.  ~~Improve icon: out of proportion~~
 1.  ~~properly configure electron~~
 1.  ~~Keyboard shortcuts~~
+1.  Need to include development timetable in settings.json, not hardcoded in
