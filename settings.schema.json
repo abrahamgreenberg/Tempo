@@ -4,6 +4,9 @@
         "defaultName": {
             "type": "string"
         },
+        "development": {
+            "type": "boolean"
+        },
         "listViewTimeslot": {
             "type": "string"
         },
@@ -48,6 +51,86 @@
                 },
                 "required": ["name", "length"]
             }
+        },
+        "testSave": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string"
+                },
+                "day": {
+                    "type": "integer"
+                },
+                "timeslots": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "name": {
+                                "type": "string"
+                            },
+                            "start": {
+                                "type": "integer"
+                            },
+                            "end": {
+                                "type": "integer"
+                            },
+                            "finalEnd": {
+                                "type": "integer"
+                            },
+                            "deleted": {
+                                "type": "boolean"
+                            },
+                            "id": {
+                                "type": "integer"
+                            }
+                        },
+                        "required": [
+                            "name",
+                            "start",
+                            "end",
+                            "finalEnd",
+                            "deleted",
+                            "id"
+                        ]
+                    }
+                },
+                "tasks": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "name": {
+                                "type": "string"
+                            },
+                            "length": {
+                                "type": "integer"
+                            },
+                            "deleted": {
+                                "type": "boolean"
+                            },
+                            "id": {
+                                "type": "integer"
+                            },
+                            "order": {
+                                "type": "integer"
+                            },
+                            "timeslotId": {
+                                "type": "integer"
+                            }
+                        },
+                        "required": [
+                            "name",
+                            "length",
+                            "deleted",
+                            "id",
+                            "order",
+                            "timeslotId"
+                        ]
+                    }
+                }
+            },
+            "required": ["name", "day", "timeslots", "tasks"]
         }
     },
     "required": [
@@ -57,6 +140,8 @@
         "printViewTimeslot",
         "printViewTask",
         "presetTimeslots",
-        "presetTasks"
+        "presetTasks",
+        "testSave",
+        "development"
     ]
 }

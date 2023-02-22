@@ -107,7 +107,7 @@ const isSave = (obj: any): obj is Save => {
         obj &&
         typeof obj === "object" &&
         typeof obj.name === "string" &&
-        typeof obj.day === "string" &&
+        typeof obj.day === "number" &&
         Array.isArray(obj.timeslots) &&
         Array.isArray(obj.tasks) &&
         (obj.timeslots.length > 0 ?? isTimeslot(obj.timeslots[0])) &&
@@ -1147,94 +1147,10 @@ const loadSave = (save: Save) => {
 
 const testData = () => {
     if (settings.development !== true) return;
-    const testSave: Save = {
-        name: "Test",
-        day: 1,
-        timeslots: [
-            {
-                name: "Morning",
-                deleted: false,
-                start: 540,
-                end: 660,
-                finalEnd: 660,
-                id: 0,
-            },
-            {
-                name: "Lunch",
-                deleted: false,
-                start: 765,
-                end: 825,
-                finalEnd: 825,
-                id: 1,
-            },
-            {
-                name: "After school",
-                deleted: false,
-                start: 1020,
-                end: 1170,
-                finalEnd: 1170,
-                id: 2,
-            },
-        ],
-        tasks: [
-            {
-                deleted: false,
-                id: 0,
-                length: 60,
-                name: "Math hw",
-                order: 0,
-                timeslotId: 0,
-            },
-            {
-                deleted: false,
-                id: 1,
-                length: 60,
-                name: "Computer science hw",
-                order: 1,
-                timeslotId: 0,
-            },
-            {
-                deleted: false,
-                id: 2,
-                length: 60,
-                name: "Economics",
-                order: 0,
-                timeslotId: 1,
-            },
-            {
-                deleted: false,
-                id: 3,
-                length: 30,
-                name: "Economics",
-                order: 0,
-                timeslotId: 2,
-            },
-            {
-                deleted: false,
-                id: 4,
-                length: 30,
-                name: "Math",
-                order: 1,
-                timeslotId: 2,
-            },
-            {
-                deleted: false,
-                id: 5,
-                length: 60,
-                name: "Coursework",
-                order: 2,
-                timeslotId: 2,
-            },
-            {
-                deleted: false,
-                id: 6,
-                length: 60,
-                name: "Trombone",
-                order: 3,
-                timeslotId: 2,
-            },
-        ],
-    };
+    const testSave = settings.testSave;
+    console.log(testSave);
+    console.log(isSave(testSave));
+    if (!isSave(testSave)) return;
 
     loadSave(testSave);
 };

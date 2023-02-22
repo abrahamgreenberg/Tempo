@@ -1,12 +1,12 @@
 {
     "name": "school_planner",
-    "version": "1.1.0",
+    "version": "1.1.",
     "description": "This is a project that helps create a timetable for your day!",
     "main": "dist/app.js",
     "scripts": {
         "build": "tsc && sass styles/scss:styles/css",
-        "dev": "nodemon --watch **/* -e ts,scss,json --exec \"pnpm run build\"",
-        "dev-electron": "nodemon --watch **/* -e ts,scss,json --exec \"pnpm run electron\"",
+        "dev": "nodemon --watch src -e ts,scss,json --exec \"pnpm run build\"",
+        "dev-electron": "nodemon --watch src -e ts,scss,json --exec \"pnpm run electron\"",
         "electron": "pnpm run build && electron dist/app.js",
         "electron-build": "pnpm run build && electron-builder"
     },
