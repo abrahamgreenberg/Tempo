@@ -1,46 +1,21 @@
-# School planner
+# React + TypeScript + Vite + shadcn/ui
 
-A project that automatically generates my plan for the next day
+This is a template for a new Vite project with React, TypeScript, and shadcn/ui.
 
-## TODO:
+## Adding components
 
-1.  ~~Add dragging to other timeslots~~
-1.  ~~Settings.json~~
-1.  ~~Add other options, like name for the timetable~~
-    ~~<br/>-> name~~
-    ~~<br/>-> day~~
-1.  ~~Add checkboxes in the print view~~
-1.  ~~Add saving and loading configs~~
-1.  ~~Add option to clear current configs~~
-1.  ~~Add deleting and editing to tasks and timeslots~~
-    ~~<br/>-> for deleting, instead of actually deleting, just use a property of the instance~~
-1.  ~~Change default dragging cursor~~
-1.  ~~Find a better color pallet and layout
-    -> https://coolors.co/2b2d42-8d99ae-edf2f4-e6c260-ef233c-d90429
-    -> https://www.figma.com/file/fZKNDonKnhY0Uk2dHYmIwc/Untitled?node-id=0%3A1&t=WC7003374GTmoHxB-0~~
-1.  ~~Fix bug where you cant drag items on timeslots~~
-1.  ~~Add constants enum~~
-1.  ~~Fix bug where deleted category is rendered in print view~~
-1.  ~~Code for setting default day, to be implemented~~
-1.  ~~fix bug encountered when deleting tasking multiple time slots~~
-1.  ~~Fix bug in removing values from dropdown when clearing lists~~
-1.  ~~Day is undefined when I change it~~
-1.  ~~Better color algorithm in the print view~~
-1.  ~~Option to regenerate colors in print view~~
-1.  ~~Presets~~
-1.  ~~Editing tasks~~
-1.  ~~Validate inputs when editing~~
-    -   ~~Need to validate time inputs so they are in valid string input~~
-    -   ~~Need to validate times to make sure timeslots do not overlap~~
-        -   ~~Perhaps i can make a function to validate timeslot times with a given start and end, so code is not repeated from add time slot~~
-1.  ~~Electron~~
-1.  ~~Fix styling for print.scss and information in print.css~~
-1.  ~~Fix styling for delete button on errenous task~~
-1.  ~~Copying tasks~~
-1.  ~~Change save name to the name of the timetable~~
-1.  ~~Fix time not wrapping when above 24, e.g going from 23:30 -> 00:30 instead of 24:30 if task is over length~~
-1.  ~~Improve icon: out of proportion~~
-1.  ~~properly configure electron~~
-1.  ~~Keyboard shortcuts~~
-1.  ~~Need to include development timetable in settings.json, not hardcoded in~~
-1.  Figure out why printing crashes on linux
+To add components to your app, run the following command:
+
+```bash
+npx shadcn@latest add button
+```
+
+This will place the ui components in the `src/components` directory.
+
+## Using components
+
+To use the components in your app, import them as follows:
+
+```tsx
+import { Button } from "@/components/ui/button"
+```

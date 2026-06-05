@@ -1,17 +1,12 @@
 {
+  "files": [],
+  "references": [
+    { "path": "./tsconfig.app.json" },
+    { "path": "./tsconfig.node.json" }
+  ],
   "compilerOptions": {
-    "target": "es6",
-    "module": "commonjs",
-    "moduleResolution": "node",
-    "sourceMap": true,
-    "emitDecoratorMetadata": true,
-    "experimentalDecorators": true,
-    "removeComments": true,
-    "noImplicitAny": false,
-    "suppressImplicitAnyIndexErrors": true,
-    "outDir": "dist"
-  },
-  "exclude": [
-    "node_modules"
-  ]
+    "paths": {
+      "@/*": ["./src/*"]
+    }
+  }
 }
