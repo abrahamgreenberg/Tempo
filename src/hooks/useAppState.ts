@@ -63,12 +63,24 @@ const initialState: AppState = {
 function appReducer(state: AppState, action: AppAction): AppState {
   switch (action.type) {
     case "ADD_ITEM": {
+      const item = action.payload
+      const column = state.columns[item.listId]
+
       return {
         ...state,
         items: {
           ...state.items,
-          [action.payload.id]: action.payload,
+          [item.id]: item,
         },
+        columns: column
+          ? {
+              ...state.columns,
+              [item.listId]: {
+                ...column,
+                itemIds: [...column.itemIds, item.id],
+              },
+            }
+          : state.columns,
       }
     }
 
@@ -81,6 +93,25 @@ function appReducer(state: AppState, action: AppAction): AppState {
           ...state.items,
           [action.id]: { ...currentItem, ...action.payload },
         },
+        columns:
+          action.payload.listId && action.payload.listId !== currentItem.listId
+            ? {
+                ...state.columns,
+                [currentItem.listId]: {
+                  ...state.columns[currentItem.listId],
+                  itemIds: state.columns[currentItem.listId].itemIds.filter(
+                    (id) => id !== action.id
+                  ),
+                },
+                [action.payload.listId]: {
+                  ...state.columns[action.payload.listId],
+                  itemIds: [
+                    ...state.columns[action.payload.listId].itemIds,
+                    action.id,
+                  ],
+                },
+              }
+            : state.columns,
       }
     }
 
@@ -160,8 +191,19 @@ function appReducer(state: AppState, action: AppAction): AppState {
       const toItemIds = [...toCol.itemIds]
       toItemIds.splice(toIndex, 0, itemId)
 
+      // Update item's listId if moved to different column
+      const updatedItem = state.items[itemId]
+      const updatedItems =
+        fromColumn !== toColumn && updatedItem
+          ? {
+              ...state.items,
+              [itemId]: { ...updatedItem, listId: toColumn, position: toIndex },
+            }
+          : state.items
+
       return {
         ...state,
+        items: updatedItems,
         columns: {
           ...state.columns,
           [fromColumn]: { ...fromCol, itemIds: fromItemIds },

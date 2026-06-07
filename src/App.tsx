@@ -1,11 +1,68 @@
 import { DragDropProvider } from "@dnd-kit/react"
 import { move } from "@dnd-kit/helpers"
+import { useState } from "react"
 import Column from "./Column"
 import Item from "./Item"
 import { useAppState } from "@/hooks/useAppState"
+import { EditModal } from "@/components/modals/EditModal"
+import type { ItemInputSchema } from "@/lib/schemas"
+import type { z } from "zod"
 
 export function App() {
-  const { state, moveItem } = useAppState()
+  const {
+    state,
+    moveItem,
+    updateItem,
+    deleteItem,
+    addItem,
+    openItemEditor,
+    closeItemEditor,
+  } = useAppState()
+  const [isModalOpen, setIsModalOpen] = useState(false)
+  const [editingItemId, setEditingItemId] = useState<string | null>(null)
+
+  const handleEditItem = (id: string) => {
+    setEditingItemId(id)
+    setIsModalOpen(true)
+  }
+
+  const handleDeleteItem = (id: string) => {
+    deleteItem(id)
+  }
+
+  const handleSaveItem = (
+    data: z.infer<typeof ItemInputSchema> & { listId: string }
+  ) => {
+    if (editingItemId) {
+      // Update existing item
+      updateItem(editingItemId, {
+        name: data.name,
+        durationMinutes: data.durationMinutes,
+        listId: data.listId,
+      })
+    } else {
+      // Create new item - generate a simple ID for demo
+      const newId = `itm_${Date.now()}`
+      addItem(
+        {
+          name: data.name,
+          durationMinutes: data.durationMinutes,
+          listId: data.listId,
+          position: 0,
+        },
+        newId
+      )
+    }
+    setIsModalOpen(false)
+    setEditingItemId(null)
+  }
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false)
+    setEditingItemId(null)
+  }
+
+  const editingItem = editingItemId ? state.items[editingItemId] : undefined
 
   return (
     <div className="flex min-h-svh w-full items-center justify-center bg-muted/30 p-6">
@@ -68,6 +125,8 @@ export function App() {
                     index={index}
                     column={columnId}
                     item={item}
+                    onEdit={handleEditItem}
+                    onDelete={handleDeleteItem}
                   />
                 ) : null
               })}
@@ -75,6 +134,16 @@ export function App() {
           ))}
         </DragDropProvider>
       </section>
+
+      <EditModal
+        isOpen={isModalOpen}
+        mode={editingItemId ? "edit" : "create"}
+        entityType="item"
+        item={editingItem}
+        columns={state.columns}
+        onClose={handleCloseModal}
+        onSave={handleSaveItem}
+      />
     </div>
   )
 }
