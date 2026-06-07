@@ -1,13 +1,22 @@
 import { useSortable } from "@dnd-kit/react/sortable"
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card"
+import type { Item as ItemType } from "@/types/domain"
 
 export const Item = ({
   id,
   index,
   column,
+  item,
 }: {
   id: string
   index: number
   column: string
+  item: ItemType
 }) => {
   const { ref, isDragging } = useSortable({
     id,
@@ -18,15 +27,19 @@ export const Item = ({
   })
 
   return (
-    <button
-      className="rounded-lg border border-border/70 bg-background/95 p-4 shadow"
+    <Card
       ref={ref}
+      className="cursor-grab active:cursor-grabbing"
       data-dragging={isDragging}
+      style={{
+        opacity: isDragging ? 0.5 : 1,
+      }}
     >
-      {`Item ${index + 1}`}
-      {/* <p className="text-sm font-medium">{`Item ${index + 1}`}</p> */}
-      {/* <p className="text-xs text-muted-foreground">{id}</p> */}
-    </button>
+      <CardHeader className="pb-3">
+        <CardTitle className="text-base">{item.name}</CardTitle>
+        <CardDescription>{item.durationMinutes} minutes</CardDescription>
+      </CardHeader>
+    </Card>
   )
 }
 

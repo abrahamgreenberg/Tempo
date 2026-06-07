@@ -1,67 +1,76 @@
-import {
-  Card,
-  CardAction,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
-import { items } from "@/lib/data"
-import { useState } from "react"
 import { DragDropProvider } from "@dnd-kit/react"
 import { move } from "@dnd-kit/helpers"
 import Column from "./Column"
 import Item from "./Item"
+import { useAppState } from "@/hooks/useAppState"
 
 export function App() {
-  const [items, setItems] = useState({
-    A: ["A0", "A1", "A2"],
-    B: ["B0", "B1"],
-    C: [],
-  })
-
-  /*     
-  
-  import { items } from "@/lib/data"
-
-  
-  <section className="w-full max-w-6xl rounded-[2.25rem] border border-border/70 bg-background/95 p-5 shadow-lg sm:p-8">
-        <div className="mb-6">
-          <h1 className="text-2xl font-semibold tracking-tight">Daily Plan</h1>
-          <p className="text-sm text-muted-foreground">
-            Your tasks in order inside one grouped board.
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 gap-4">
-          {items
-            .sort((a, b) => a.position - b.position)
-            .map((item, index) => (
-              <Card key={item.id} className="h-full">
-                <CardHeader>
-                  <CardTitle>{item.name}</CardTitle>
-                  <CardAction className="text-xs font-medium text-muted-foreground">
-                    {(index + 1).toString().padStart(2, "0")}
-                  </CardAction>
-                </CardHeader>
-              </Card>
-            ))}
-        </div> */
+  const { state, moveItem } = useAppState()
 
   return (
     <div className="flex min-h-svh w-full items-center justify-center bg-muted/30 p-6">
-      <section className="grid w-full max-w-6xl grid-cols-3 gap-5 rounded-[2.25rem] border border-border/70 bg-background/95 p-5 shadow-lg sm:p-8">
+      <section className="grid w-full max-w-6xl grid-cols-3 gap-5 rounded-lg border border-border/70 bg-background/95 p-5 shadow-lg sm:p-8">
         <DragDropProvider
           onDragOver={(event) => {
-            setItems((items) => move(items, event))
+            // Extract itemIds from columns into the format dnd-kit expects
+            const columnItemsMap = Object.entries(state.columns).reduce(
+              (acc, [colId, col]) => ({
+                ...acc,
+                [colId]: col.itemIds,
+              }),
+              {} as Record<string, string[]>
+            )
+
+            const result = move(columnItemsMap, event)
+            if (result) {
+              // Find what changed and dispatch moveItem
+              const entries = Object.entries(result)
+              for (const [colId, newItemIds] of entries) {
+                const oldItemIds = state.columns[colId].itemIds
+                const newIds = newItemIds as string[]
+                if (JSON.stringify(oldItemIds) !== JSON.stringify(newIds)) {
+                  // Find the item that was added to this column
+                  const movedItem = newIds.find(
+                    (id) => !oldItemIds.includes(id)
+                  )
+                  if (movedItem) {
+                    // Find which column it came from
+                    for (const [oldColId, oldIds] of Object.entries(
+                      state.columns
+                    )) {
+                      if (
+                        oldIds.itemIds.includes(movedItem) &&
+                        oldColId !== colId
+                      ) {
+                        moveItem(
+                          movedItem,
+                          oldColId,
+                          colId,
+                          newIds.indexOf(movedItem)
+                        )
+                        return
+                      }
+                    }
+                  }
+                }
+              }
+            }
           }}
         >
-          {Object.entries(items).map(([column, items]) => (
-            <Column key={column} id={column}>
-              {items.map((id, index) => (
-                <Item key={id} id={id} index={index} column={column} />
-              ))}
+          {Object.entries(state.columns).map(([columnId, column]) => (
+            <Column key={columnId} id={columnId} column={column}>
+              {column.itemIds.map((itemId, index) => {
+                const item = state.items[itemId]
+                return item ? (
+                  <Item
+                    key={itemId}
+                    id={itemId}
+                    index={index}
+                    column={columnId}
+                    item={item}
+                  />
+                ) : null
+              })}
             </Column>
           ))}
         </DragDropProvider>
