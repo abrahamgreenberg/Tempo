@@ -1,19 +1,40 @@
-import { Button } from "@/components/ui/button"
+import {
+  Card,
+  CardAction,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card"
+import { items } from "@/lib/data"
 
 export function App() {
   return (
-    <div className="flex min-h-svh p-6">
-      <div className="flex max-w-md min-w-0 flex-col gap-4 text-sm leading-loose">
-        <div>
-          <h1 className="font-medium">Project ready!</h1>
-          <p>You may now add components and start building.</p>
-          <p>We&apos;ve already added the button component for you.</p>
-          <Button className="mt-2">Button</Button>
+    <div className="flex min-h-svh w-full items-center justify-center bg-muted/30 p-6">
+      <section className="w-full max-w-6xl rounded-[2.25rem] border border-border/70 bg-background/95 p-5 shadow-lg sm:p-8">
+        <div className="mb-6">
+          <h1 className="text-2xl font-semibold tracking-tight">Daily Plan</h1>
+          <p className="text-sm text-muted-foreground">
+            Your tasks in order inside one grouped board.
+          </p>
         </div>
-        <div className="font-mono text-xs text-muted-foreground">
-          (Press <kbd>d</kbd> to toggle dark mode)
+
+        <div className="grid grid-cols-1 gap-4">
+          {items
+            .sort((a, b) => a.position - b.position)
+            .map((item, index) => (
+              <Card key={item.id} className="h-full">
+                <CardHeader>
+                  <CardTitle>{item.name}</CardTitle>
+                  <CardAction className="text-xs font-medium text-muted-foreground">
+                    {(index + 1).toString().padStart(2, "0")}
+                  </CardAction>
+                </CardHeader>
+              </Card>
+            ))}
         </div>
-      </div>
+      </section>
     </div>
   )
 }

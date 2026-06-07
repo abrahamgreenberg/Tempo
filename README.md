@@ -1,21 +1,79 @@
-# React + TypeScript + Vite + shadcn/ui
+What I'd Do for the MVP
 
-This is a template for a new Vite project with React, TypeScript, and shadcn/ui.
+I wouldn't even start with Express immediately.
 
-## Adding components
+Phase 1
 
-To add components to your app, run the following command:
+React state only:
 
-```bash
-npx shadcn@latest add button
-```
+const [blocks, setBlocks] = useState(...)
+const [items, setItems] = useState(...)
 
-This will place the ui components in the `src/components` directory.
+Get:
 
-## Using components
+create block
+create item
+edit item
+drag item
 
-To use the components in your app, import them as follows:
+working first.
 
-```tsx
-import { Button } from "@/components/ui/button"
-```
+Phase 2
+
+Introduce a repository layer.
+
+Instead of:
+
+setItems(...)
+
+everywhere, create:
+
+itemRepository.create(...)
+itemRepository.update(...)
+itemRepository.move(...)
+
+Initially:
+
+LocalStorageRepository
+
+stores to localStorage.
+
+Phase 3
+
+Replace implementation:
+
+ApiRepository
+
+which talks to Express.
+
+The UI doesn't change.
+
+Phase 4
+
+Express stores data in memory.
+
+let items: Item[] = [];
+
+Build routes:
+
+GET /items
+POST /items
+PATCH /items/:id
+DELETE /items/:id
+Phase 5
+
+Swap memory for Prisma/Postgres.
+
+Again, the frontend doesn't change.
+
+This layered approach is one of the biggest architectural lessons you can learn from a project like Tempo. If you separate:
+
+UI
+↓
+Repository
+↓
+API
+↓
+Database
+
+you'll be able to evolve the app from a simple React prototype all the way to an AWS-hosted application without repeatedly rewriting the frontend.
