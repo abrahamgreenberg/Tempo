@@ -1,13 +1,6 @@
 import { findItemPlacement } from "@/lib/board"
 import type { AppState, Column, Item, ItemUpdate } from "@/types/domain"
 
-export interface ItemMoveOperation {
-  itemId: string
-  fromColumn: string
-  toColumn: string
-  toIndex: number
-}
-
 export function createColumnItemsMap(columns: Record<string, Column>) {
   return Object.fromEntries(
     Object.entries(columns).map(([columnId, column]) => [
@@ -15,40 +8,6 @@ export function createColumnItemsMap(columns: Record<string, Column>) {
       column.itemIds,
     ])
   ) as Record<string, string[]>
-}
-
-export function resolveItemMoveOperation(
-  columns: Record<string, Column>,
-  nextColumnItems: Record<string, string[]>
-): ItemMoveOperation | null {
-  for (const [columnId, nextItemIds] of Object.entries(nextColumnItems)) {
-    const previousItemIds = columns[columnId]?.itemIds ?? []
-    if (JSON.stringify(previousItemIds) === JSON.stringify(nextItemIds)) {
-      continue
-    }
-
-    const movedItemId = nextItemIds.find(
-      (itemId) => !previousItemIds.includes(itemId)
-    )
-    if (!movedItemId) {
-      continue
-    }
-
-    for (const [fromColumnId, column] of Object.entries(columns)) {
-      if (fromColumnId === columnId || !column.itemIds.includes(movedItemId)) {
-        continue
-      }
-
-      return {
-        itemId: movedItemId,
-        fromColumn: fromColumnId,
-        toColumn: columnId,
-        toIndex: nextItemIds.indexOf(movedItemId),
-      }
-    }
-  }
-
-  return null
 }
 
 export function addItemToBoard(
@@ -179,30 +138,5 @@ export function deleteColumnFromBoard(
   return {
     ...state,
     columns: remainingColumns,
-  }
-}
-
-export function moveItemInBoard(
-  state: AppState,
-  operation: ItemMoveOperation
-): AppState {
-  const fromColumn = state.columns[operation.fromColumn]
-  const toColumn = state.columns[operation.toColumn]
-
-  if (!fromColumn || !toColumn) {
-    return state
-  }
-
-  const fromItemIds = fromColumn.itemIds.filter((id) => id !== operation.itemId)
-  const toItemIds = [...toColumn.itemIds]
-  toItemIds.splice(operation.toIndex, 0, operation.itemId)
-
-  return {
-    ...state,
-    columns: {
-      ...state.columns,
-      [operation.fromColumn]: { ...fromColumn, itemIds: fromItemIds },
-      [operation.toColumn]: { ...toColumn, itemIds: toItemIds },
-    },
   }
 }

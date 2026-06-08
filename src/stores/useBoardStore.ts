@@ -5,7 +5,6 @@ import {
   addItemToBoard,
   deleteColumnFromBoard,
   deleteItemFromBoard,
-  moveItemInBoard,
   updateColumnInBoard,
   updateItemInBoard,
   createColumnItemsMap,
@@ -126,12 +125,6 @@ interface BoardStore extends AppState {
   addColumn: (column: Omit<Column, "id" | "itemIds">, id: string) => void
   updateColumn: (id: string, updates: Partial<Column>) => void
   deleteColumn: (id: string) => void
-  moveItem: (
-    itemId: string,
-    fromColumn: string,
-    toColumn: string,
-    toIndex: number
-  ) => void
   handleDragOver: (event: Parameters<typeof move>[1]) => void
   recalculateColumnTimes: (columnId: string) => void
 }
@@ -189,9 +182,15 @@ export const useBoardStore = create<BoardStore>()(
       set((state) => {
         const columnId = findColumnContainingItem(state, id)
         const newState = updateItemInBoard(state, id, updates)
-        // Recalculate the column if item is in one
-        return columnId
-          ? recalculateColumnItemTimes(newState, [columnId])
+        // Recalculate columns affected by update (source and destination if moved)
+        const columnsToRecalculate: string[] = [columnId].filter(
+          Boolean
+        ) as string[]
+        if (updates.listId && updates.listId !== columnId) {
+          columnsToRecalculate.push(updates.listId)
+        }
+        return columnsToRecalculate.length > 0
+          ? recalculateColumnItemTimes(newState, columnsToRecalculate)
           : newState
       }),
 
@@ -223,20 +222,6 @@ export const useBoardStore = create<BoardStore>()(
       }),
 
     deleteColumn: (id) => set((state) => deleteColumnFromBoard(state, id)),
-
-    moveItem: (itemId, fromColumn, toColumn, toIndex) =>
-      set((state) => {
-        const newState = moveItemInBoard(state, {
-          itemId,
-          fromColumn,
-          toColumn,
-          toIndex,
-        })
-        // Recalculate both columns affected by the move
-        const columnsToRecalculate =
-          fromColumn === toColumn ? [fromColumn] : [fromColumn, toColumn]
-        return recalculateColumnItemTimes(newState, columnsToRecalculate)
-      }),
 
     handleDragOver: (event) =>
       set((state) => {
