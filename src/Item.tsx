@@ -5,11 +5,15 @@ import {
   CardHeader,
   CardTitle,
   CardDescription,
+  CardAction,
+  CardFooter,
 } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { HugeiconsIcon } from "@hugeicons/react"
 import { Pencil, Trash2 } from "@hugeicons/core-free-icons"
 import type { Item as ItemType } from "@/types/domain"
+import { Badge } from "@/components/ui/badge"
+import { ButtonGroup } from "@/components/ui/button-group"
 
 export const Item = memo(function Item({
   id,
@@ -44,37 +48,38 @@ export const Item = memo(function Item({
       }}
     >
       <CardHeader className="pb-3">
-        <div className="flex items-start justify-between gap-2">
-          <div className="flex-1">
-            <CardTitle className="text-base">{item.name}</CardTitle>
-            <CardDescription>{item.durationMinutes} minutes</CardDescription>
-          </div>
-          <div className="flex gap-1">
-            <Button
-              size="sm"
-              variant="ghost"
-              onClick={(e) => {
-                e.stopPropagation()
-                onEdit(id)
-              }}
-              className="h-7 w-7 p-0"
-            >
-              <HugeiconsIcon icon={Pencil} size={16} />
-            </Button>
-            <Button
-              size="sm"
-              variant="ghost"
-              onClick={(e) => {
-                e.stopPropagation()
-                onDelete(id)
-              }}
-              className="h-7 w-7 p-0 text-destructive hover:text-destructive"
-            >
-              <HugeiconsIcon icon={Trash2} size={16} />
-            </Button>
-          </div>
-        </div>
+        <CardTitle className="text-base">{item.name}</CardTitle>
+        <CardDescription>{item.durationMinutes} minutes</CardDescription>
+        <CardAction>
+          <Badge variant="blue">12:00</Badge>
+        </CardAction>
       </CardHeader>
+      <CardFooter>
+        <ButtonGroup>
+          <Button
+            size="sm"
+            variant="secondary"
+            onClick={(e) => {
+              e.stopPropagation()
+              onEdit(id)
+            }}
+            className="h-7 w-7 p-0"
+          >
+            <HugeiconsIcon icon={Pencil} size={16} />
+          </Button>
+          <Button
+            size="sm"
+            variant="secondary"
+            onClick={(e) => {
+              e.stopPropagation()
+              onDelete(id)
+            }}
+            className="h-7 w-7 p-0 text-destructive hover:text-destructive"
+          >
+            <HugeiconsIcon icon={Trash2} size={16} />
+          </Button>
+        </ButtonGroup>
+      </CardFooter>
     </Card>
   )
 })

@@ -233,53 +233,19 @@ Block Capacity = 180m
 Items Total = 240m
 ```
 
-Possible approaches:
-
-- Show warning state
-- Prevent insertion
-- Allow overflow with visual indicator
-
-Decision TBD.
+- Will show warning state if is in timeblock
 
 ---
 
-## 3. Long Item Rendering
+## 3. Project Architecture
 
-Determine how large activities should render.
-
-Example:
-
-```text
-Study
-180 minutes
-```
-
-Options:
-
-- Proportional height
-- Minimum height
-- Collapsed mode
-- Zoomed timeline
-
-Decision TBD.
+- I would like to remove the current icon library in place for a different one
 
 ---
 
-## 4. Drag Validation
+## 4. Final Render View
 
-Before allowing a drop:
-
-```text
-Can this item fit here?
-```
-
-Checks:
-
-- Available space
-- Time constraints
-- Scheduling rules
-
-Future drops should be validated before committing state changes.
+- We still need to implement the final render of the project once the user has built their plan for the day
 
 ---
 
