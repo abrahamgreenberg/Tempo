@@ -113,13 +113,11 @@ export const Item = memo(function Item({
           {isOverColumnEnd && (
             <Tooltip>
               <TooltipTrigger>
-                <Button variant="ghost" size="sm" className="h-7 w-7 p-0">
-                  <HugeiconsIcon
-                    icon={AlertIcon}
-                    size={16}
-                    className="text-destructive"
-                  />
-                </Button>
+                <HugeiconsIcon
+                  icon={AlertIcon}
+                  size={16}
+                  className="text-destructive"
+                />
               </TooltipTrigger>
               <TooltipContent>
                 <p>Task is over time block end</p>
