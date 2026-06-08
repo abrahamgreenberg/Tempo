@@ -1,46 +1,377 @@
-# School planner
+# Tempo Rewrite Roadmap
 
-A project that automatically generates my plan for the next day
+## Vision
 
-## TODO:
+Tempo is a personal timetable and day-planning application.
 
-1.  ~~Add dragging to other timeslots~~
-1.  ~~Settings.json~~
-1.  ~~Add other options, like name for the timetable~~
-    ~~<br/>-> name~~
-    ~~<br/>-> day~~
-1.  ~~Add checkboxes in the print view~~
-1.  ~~Add saving and loading configs~~
-1.  ~~Add option to clear current configs~~
-1.  ~~Add deleting and editing to tasks and timeslots~~
-    ~~<br/>-> for deleting, instead of actually deleting, just use a property of the instance~~
-1.  ~~Change default dragging cursor~~
-1.  ~~Find a better color pallet and layout
-    -> https://coolors.co/2b2d42-8d99ae-edf2f4-e6c260-ef233c-d90429
-    -> https://www.figma.com/file/fZKNDonKnhY0Uk2dHYmIwc/Untitled?node-id=0%3A1&t=WC7003374GTmoHxB-0~~
-1.  ~~Fix bug where you cant drag items on timeslots~~
-1.  ~~Add constants enum~~
-1.  ~~Fix bug where deleted category is rendered in print view~~
-1.  ~~Code for setting default day, to be implemented~~
-1.  ~~fix bug encountered when deleting tasking multiple time slots~~
-1.  ~~Fix bug in removing values from dropdown when clearing lists~~
-1.  ~~Day is undefined when I change it~~
-1.  ~~Better color algorithm in the print view~~
-1.  ~~Option to regenerate colors in print view~~
-1.  ~~Presets~~
-1.  ~~Editing tasks~~
-1.  ~~Validate inputs when editing~~
-    -   ~~Need to validate time inputs so they are in valid string input~~
-    -   ~~Need to validate times to make sure timeslots do not overlap~~
-        -   ~~Perhaps i can make a function to validate timeslot times with a given start and end, so code is not repeated from add time slot~~
-1.  ~~Electron~~
-1.  ~~Fix styling for print.scss and information in print.css~~
-1.  ~~Fix styling for delete button on errenous task~~
-1.  ~~Copying tasks~~
-1.  ~~Change save name to the name of the timetable~~
-1.  ~~Fix time not wrapping when above 24, e.g going from 23:30 -> 00:30 instead of 24:30 if task is over length~~
-1.  ~~Improve icon: out of proportion~~
-1.  ~~properly configure electron~~
-1.  ~~Keyboard shortcuts~~
-1.  ~~Need to include development timetable in settings.json, not hardcoded in~~
-1.  Figure out why printing crashes on linux
+The goal of the rewrite is to rebuild the application using a modern TypeScript-first stack while following a scalable architecture that can evolve from:
+
+```text
+Local React State
+    ↓
+Local Storage
+    ↓
+Express API
+    ↓
+PostgreSQL
+    ↓
+AWS Deployment
+```
+
+The project serves two purposes:
+
+1. Build a genuinely useful productivity application.
+2. Learn modern frontend, backend, database, and cloud technologies through one cohesive project.
+
+---
+
+# Tech Stack
+
+## Frontend
+
+- React 19
+- TypeScript
+- Vite
+- Tailwind CSS v4
+- Base UI
+- React Hook Form
+- Zod
+
+## Drag & Drop
+
+- dnd-kit
+
+## Utilities
+
+- CUID2 for identifiers
+- clsx
+- tailwind-merge
+
+## Planned Backend
+
+- Express.js
+- TypeScript
+
+## Planned Database
+
+- PostgreSQL
+- Prisma
+
+## Planned Cloud Infrastructure
+
+- AWS Cognito (authentication)
+- AWS RDS (PostgreSQL)
+- AWS S3 + CloudFront (frontend hosting)
+- AWS EC2 or ECS (backend hosting)
+
+---
+
+# Architecture
+
+The application should maintain a clean separation between UI, data access, and persistence.
+
+```text
+UI
+↓
+Repository
+↓
+API
+↓
+Database
+```
+
+The frontend should never care where data comes from.
+
+Examples:
+
+```ts
+itemRepository.create(...)
+itemRepository.update(...)
+itemRepository.move(...)
+```
+
+Today these methods may write to local state.
+
+Later they may write to localStorage.
+
+Eventually they may call an Express API.
+
+The UI remains unchanged.
+
+---
+
+# Data Model
+
+Current model:
+
+```text
+Day
+ └── Time Block
+       └── Item
+```
+
+Example:
+
+```text
+Monday
+
+Morning
+├── Run (45m)
+├── Breakfast (30m)
+
+Work
+├── Deep Work (120m)
+├── Email (30m)
+```
+
+Proposed entities:
+
+```ts
+Day
+{
+  id: string
+  name: string
+}
+```
+
+```ts
+List (TimeBlock)
+{
+  id: string
+  dayId: string
+
+  name: string
+
+  startTime: number
+  endTime: number
+
+  position: number
+}
+```
+
+```ts
+Item
+{
+  id: string
+  blockId: string
+
+  name: string
+
+  durationMinutes: number
+
+  position: number
+}
+```
+
+---
+
+# Current Status
+
+## Phase 1: React MVP
+
+### Completed
+
+- React + TypeScript setup
+- Modern project structure
+- Tailwind setup
+- Component architecture
+- Drag-and-drop foundation
+- Sortable item ordering
+- CUID2 integration
+- Core UI direction
+
+### In Progress
+
+Zustand migration - for cleaner architecture as it scales
+
+Timeline-specific scheduling logic.
+
+The current drag-and-drop system works mechanically, but scheduling constraints still need to be implemented.
+
+Examples:
+
+- Prevent block overflow
+- Prevent impossible schedules
+- Detect time conflicts
+- Visual feedback during drag
+- Correct rendering of long-duration items
+
+---
+
+# Immediate Tasks
+
+## 1. Timeline Engine
+
+Implement scheduling calculations.
+
+Example:
+
+```text
+Morning Block
+09:00 - 12:00
+
+Run         45m
+Breakfast   30m
+Study       120m
+```
+
+Need to calculate:
+
+- Start time
+- End time
+- Remaining capacity
+- Overflow conditions
+
+---
+
+## 2. Overflow Detection
+
+Detect when:
+
+```text
+Block Capacity = 180m
+
+Items Total = 240m
+```
+
+Possible approaches:
+
+- Show warning state
+- Prevent insertion
+- Allow overflow with visual indicator
+
+Decision TBD.
+
+---
+
+## 3. Long Item Rendering
+
+Determine how large activities should render.
+
+Example:
+
+```text
+Study
+180 minutes
+```
+
+Options:
+
+- Proportional height
+- Minimum height
+- Collapsed mode
+- Zoomed timeline
+
+Decision TBD.
+
+---
+
+## 4. Drag Validation
+
+Before allowing a drop:
+
+```text
+Can this item fit here?
+```
+
+Checks:
+
+- Available space
+- Time constraints
+- Scheduling rules
+
+Future drops should be validated before committing state changes.
+
+---
+
+# Future Roadmap
+
+## Phase 2: Repository Layer
+
+Introduce:
+
+```ts
+itemRepository.create()
+itemRepository.update()
+itemRepository.delete()
+itemRepository.move()
+```
+
+Initial implementation:
+
+```text
+LocalStorageRepository
+```
+
+Persistence survives page refreshes.
+
+---
+
+## Phase 3: API Layer
+
+Introduce Express backend.
+
+Routes:
+
+```http
+GET    /items
+POST   /items
+PATCH  /items/:id
+DELETE /items/:id
+```
+
+Backend initially stores data in memory.
+
+---
+
+## Phase 4: Database
+
+Replace memory storage with:
+
+- PostgreSQL
+- Prisma
+
+No frontend changes should be required.
+
+---
+
+## Phase 5: Authentication
+
+Add:
+
+- User accounts
+- Login
+- Schedule ownership
+
+Likely using AWS Cognito.
+
+---
+
+## Phase 6: AWS Deployment
+
+Frontend:
+
+- S3
+- CloudFront
+
+Backend:
+
+- EC2 or ECS
+
+Database:
+
+- RDS PostgreSQL
+
+---
+
+# Guiding Principle
+
+Tempo should prioritize:
+
+1. Simplicity
+2. Correctness
+3. Incremental improvement
+
+Avoid building infrastructure before it is needed.
+
+Every phase should leave the application in a working, deployable state.
