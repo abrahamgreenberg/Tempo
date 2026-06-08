@@ -8,15 +8,16 @@ import type { ColumnInput, Column } from "@/lib/schemas"
 interface ListEditorModalProps {
   isOpen: boolean
   editingColumnId: string | null
+  columns: Record<string, Column>
   onClose: () => void
 }
 
 export function ListEditorModal({
   isOpen,
   editingColumnId,
+  columns,
   onClose,
 }: ListEditorModalProps) {
-  const columns = useBoardStore((state) => state.columns)
   const addColumn = useBoardStore((state) => state.addColumn)
   const updateColumn = useBoardStore((state) => state.updateColumn)
   const deleteColumn = useBoardStore((state) => state.deleteColumn)

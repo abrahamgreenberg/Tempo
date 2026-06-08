@@ -1,6 +1,5 @@
 import { create } from "zustand"
 import { devtools, persist } from "zustand/middleware"
-import { immer } from "zustand/middleware/immer"
 import {
   addItemToBoard,
   deleteColumnFromBoard,
@@ -79,64 +78,41 @@ interface BoardStore extends AppState {
 export const useBoardStore = create<BoardStore>()(
   devtools(
     persist(
-      immer((set) => ({
+      (set) => ({
         ...initialState,
 
-        // Actions using our existing pure functions
         addItem: (item, id) =>
-          set((state) => {
-            const { listId, ...itemData } = item
-            const newState = addItemToBoard(state, {
-              item: { ...itemData, id },
-              listId,
+          set((state) =>
+            addItemToBoard(state, {
+              item: { ...item, id },
+              listId: item.listId,
             })
-            state.items = newState.items
-            state.columns = newState.columns
-          }),
+          ),
 
         updateItem: (id, updates) =>
-          set((state) => {
-            const newState = updateItemInBoard(state, id, updates)
-            state.items = newState.items
-            state.columns = newState.columns
-          }),
+          set((state) => updateItemInBoard(state, id, updates)),
 
-        deleteItem: (id) =>
-          set((state) => {
-            const newState = deleteItemFromBoard(state, id)
-            state.items = newState.items
-            state.columns = newState.columns
-          }),
+        deleteItem: (id) => set((state) => deleteItemFromBoard(state, id)),
 
         addColumn: (column, id) =>
-          set((state) => {
-            state.columns[id] = { ...column, id, itemIds: [] }
-          }),
+          set((state) => ({
+            ...state,
+            columns: {
+              ...state.columns,
+              [id]: { ...column, id, itemIds: [] },
+            },
+          })),
 
         updateColumn: (id, updates) =>
-          set((state) => {
-            const newState = updateColumnInBoard(state, id, updates)
-            state.columns = newState.columns
-          }),
+          set((state) => updateColumnInBoard(state, id, updates)),
 
-        deleteColumn: (id) =>
-          set((state) => {
-            const newState = deleteColumnFromBoard(state, id)
-            state.items = newState.items
-            state.columns = newState.columns
-          }),
+        deleteColumn: (id) => set((state) => deleteColumnFromBoard(state, id)),
 
         moveItem: (itemId, fromColumn, toColumn, toIndex) =>
-          set((state) => {
-            const newState = moveItemInBoard(state, {
-              itemId,
-              fromColumn,
-              toColumn,
-              toIndex,
-            })
-            state.columns = newState.columns
-          }),
-      })),
+          set((state) =>
+            moveItemInBoard(state, { itemId, fromColumn, toColumn, toIndex })
+          ),
+      }),
       {
         name: "tempo-board-storage",
       }

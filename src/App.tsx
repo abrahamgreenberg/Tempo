@@ -1,7 +1,6 @@
 import { DragDropProvider } from "@dnd-kit/react"
 import { move } from "@dnd-kit/helpers"
 import { useModal } from "@/hooks/useModal"
-import { useCallback } from "react"
 import {
   createColumnItemsMap,
   resolveItemMoveOperation,
@@ -21,13 +20,6 @@ export function App() {
 
   const itemModal = useModal<string>()
   const listModal = useModal<string>()
-
-  const handleDeleteItem = useCallback(
-    (id: string) => {
-      deleteItem(id)
-    },
-    [deleteItem]
-  )
 
   return (
     <div className="flex min-h-svh w-full flex-col items-center justify-center gap-4 bg-muted/30 p-6">
@@ -74,7 +66,7 @@ export function App() {
                     column={columnId}
                     item={item}
                     onEdit={itemModal.open}
-                    onDelete={handleDeleteItem}
+                    onDelete={deleteItem}
                   />
                 ) : null
               })}
@@ -86,12 +78,15 @@ export function App() {
       <ItemEditorModal
         isOpen={itemModal.isOpen}
         editingItemId={itemModal.editingId}
+        columns={columns}
+        items={items}
         onClose={itemModal.close}
       />
 
       <ListEditorModal
         isOpen={listModal.isOpen}
         editingColumnId={listModal.editingId}
+        columns={columns}
         onClose={listModal.close}
       />
     </div>
