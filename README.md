@@ -199,19 +199,13 @@ Examples:
 
 # Immediate Tasks
 
-## 2. Overflow Detection
+## 1. List Management
 
-Detect when:
+- Currently lists need to be managed correctly and sorted by order, which should be managed in the program. there should also be limitations to make sure that there are no timeslot overlaps
 
-```text
-Block Capacity = 180m
+## 2. Better forms
 
-Items Total = 240m
-```
-
-- Will show warning state if is in timeblock
-
----
+- I would like to have better forms to manage timeslots and items, with sliders and more visual info
 
 ## 3. Project Architecture
 
@@ -302,6 +296,13 @@ Backend:
 Database:
 
 - RDS PostgreSQL
+
+---
+
+## Phase 7:
+
+Multi day managment:
+The program is going to be built about manging the timetable for a given day, eventually users should be able to manager multiple days from within the timetable generator
 
 ---
 

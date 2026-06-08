@@ -15,11 +15,17 @@ import {
   Trash2,
   Flag02FreeIcons,
   CheckmarkSquare02Icon,
+  AlertIcon,
 } from "@hugeicons/core-free-icons"
 import type { Item as ItemType } from "@/types/domain"
 import type { Time } from "@/lib/utils"
 import { Badge } from "@/components/ui/badge"
 import { ButtonGroup } from "@/components/ui/button-group"
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
 
 export const Item = memo(function Item({
   id,
@@ -79,30 +85,48 @@ export const Item = memo(function Item({
         </CardAction>
       </CardHeader>
       <CardFooter>
-        <ButtonGroup>
-          <Button
-            size="sm"
-            variant="secondary"
-            onClick={(e) => {
-              e.stopPropagation()
-              onEdit(id)
-            }}
-            className="h-7 w-7 p-0"
-          >
-            <HugeiconsIcon icon={Pencil} size={16} />
-          </Button>
-          <Button
-            size="sm"
-            variant="secondary"
-            onClick={(e) => {
-              e.stopPropagation()
-              onDelete(id)
-            }}
-            className="h-7 w-7 p-0 text-destructive hover:text-destructive"
-          >
-            <HugeiconsIcon icon={Trash2} size={16} />
-          </Button>
-        </ButtonGroup>
+        <div className="flex w-full items-center justify-between gap-2">
+          <ButtonGroup>
+            <Button
+              size="sm"
+              variant="secondary"
+              onClick={(e) => {
+                e.stopPropagation()
+                onEdit(id)
+              }}
+              className="h-7 w-7 p-0"
+            >
+              <HugeiconsIcon icon={Pencil} size={16} />
+            </Button>
+            <Button
+              size="sm"
+              variant="secondary"
+              onClick={(e) => {
+                e.stopPropagation()
+                onDelete(id)
+              }}
+              className="h-7 w-7 p-0 text-destructive hover:text-destructive"
+            >
+              <HugeiconsIcon icon={Trash2} size={16} />
+            </Button>
+          </ButtonGroup>
+          {isOverColumnEnd && (
+            <Tooltip>
+              <TooltipTrigger>
+                <Button variant="ghost" size="sm" className="h-7 w-7 p-0">
+                  <HugeiconsIcon
+                    icon={AlertIcon}
+                    size={16}
+                    className="text-destructive"
+                  />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Task is over time block end</p>
+              </TooltipContent>
+            </Tooltip>
+          )}
+        </div>
       </CardFooter>
     </Card>
   )
