@@ -1,5 +1,5 @@
 import { create } from "zustand"
-import { devtools, persist } from "zustand/middleware"
+import { devtools } from "zustand/middleware"
 import { move } from "@dnd-kit/helpers"
 import {
   addItemToBoard,
@@ -80,67 +80,60 @@ interface BoardStore extends AppState {
 }
 
 export const useBoardStore = create<BoardStore>()(
-  devtools(
-    persist(
-      (set) => ({
-        ...initialState,
+  devtools((set) => ({
+    ...initialState,
 
-        addItem: (item, id) =>
-          set((state) =>
-            addItemToBoard(state, {
-              item: { ...item, id },
-              listId: item.listId,
-            })
-          ),
+    addItem: (item, id) =>
+      set((state) =>
+        addItemToBoard(state, {
+          item: { ...item, id },
+          listId: item.listId,
+        })
+      ),
 
-        updateItem: (id, updates) =>
-          set((state) => updateItemInBoard(state, id, updates)),
+    updateItem: (id, updates) =>
+      set((state) => updateItemInBoard(state, id, updates)),
 
-        deleteItem: (id) => set((state) => deleteItemFromBoard(state, id)),
+    deleteItem: (id) => set((state) => deleteItemFromBoard(state, id)),
 
-        addColumn: (column, id) =>
-          set((state) => ({
-            ...state,
-            columns: {
-              ...state.columns,
-              [id]: { ...column, id, itemIds: [] },
-            },
-          })),
+    addColumn: (column, id) =>
+      set((state) => ({
+        ...state,
+        columns: {
+          ...state.columns,
+          [id]: { ...column, id, itemIds: [] },
+        },
+      })),
 
-        updateColumn: (id, updates) =>
-          set((state) => updateColumnInBoard(state, id, updates)),
+    updateColumn: (id, updates) =>
+      set((state) => updateColumnInBoard(state, id, updates)),
 
-        deleteColumn: (id) => set((state) => deleteColumnFromBoard(state, id)),
+    deleteColumn: (id) => set((state) => deleteColumnFromBoard(state, id)),
 
-        moveItem: (itemId, fromColumn, toColumn, toIndex) =>
-          set((state) =>
-            moveItemInBoard(state, { itemId, fromColumn, toColumn, toIndex })
-          ),
+    moveItem: (itemId, fromColumn, toColumn, toIndex) =>
+      set((state) =>
+        moveItemInBoard(state, { itemId, fromColumn, toColumn, toIndex })
+      ),
 
-        handleDragOver: (event) =>
-          set((state) => {
-            const columnItemsMap = createColumnItemsMap(state.columns)
-            const result = move(columnItemsMap, event)
-            if (!result) {
-              return state
-            }
+    handleDragOver: (event) =>
+      set((state) => {
+        const columnItemsMap = createColumnItemsMap(state.columns)
+        const result = move(columnItemsMap, event)
+        if (!result) {
+          return state
+        }
 
-            const operation = resolveItemMoveOperation(
-              state.columns,
-              result as Record<string, string[]>
-            )
-            if (!operation) {
-              return state
-            }
+        const operation = resolveItemMoveOperation(
+          state.columns,
+          result as Record<string, string[]>
+        )
+        if (!operation) {
+          return state
+        }
 
-            return moveItemInBoard(state, operation)
-          }),
+        return moveItemInBoard(state, operation)
       }),
-      {
-        name: "tempo-board-storage",
-      }
-    )
-  )
+  }))
 )
 
 // Selectors for performance optimization
@@ -156,6 +149,6 @@ export function useBoardData() {
   const items = useBoardStore((state) => state.items)
   const deleteItem = useBoardStore((state) => state.deleteItem)
   const handleDragOver = useBoardStore((state) => state.handleDragOver)
-  
+
   return { columns, items, deleteItem, handleDragOver }
 }
