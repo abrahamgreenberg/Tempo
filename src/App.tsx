@@ -17,12 +17,7 @@ export function App() {
   const columns = useBoardStore((state) => state.columns)
   const items = useBoardStore((state) => state.items)
   const moveItem = useBoardStore((state) => state.moveItem)
-  const updateItem = useBoardStore((state) => state.updateItem)
   const deleteItem = useBoardStore((state) => state.deleteItem)
-  const addItem = useBoardStore((state) => state.addItem)
-  const addColumn = useBoardStore((state) => state.addColumn)
-  const updateColumn = useBoardStore((state) => state.updateColumn)
-  const deleteColumn = useBoardStore((state) => state.deleteColumn)
 
   const itemModal = useModal<string>()
   const listModal = useModal<string>()
@@ -91,20 +86,12 @@ export function App() {
       <ItemEditorModal
         isOpen={itemModal.isOpen}
         editingItemId={itemModal.editingId}
-        columns={columns}
-        items={items}
-        addItem={addItem}
-        updateItem={updateItem}
         onClose={itemModal.close}
       />
 
       <ListEditorModal
         isOpen={listModal.isOpen}
         editingColumnId={listModal.editingId}
-        columns={columns}
-        addColumn={addColumn}
-        updateColumn={updateColumn}
-        deleteColumn={deleteColumn}
         onClose={listModal.close}
       />
     </div>

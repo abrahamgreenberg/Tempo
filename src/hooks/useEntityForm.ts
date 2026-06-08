@@ -1,6 +1,6 @@
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { useEffect, useMemo } from "react"
+import { useEffect, useMemo, useRef } from "react"
 import { z } from "zod"
 
 interface UseEntityFormProps<T extends z.ZodType<any, any>> {
@@ -24,9 +24,23 @@ export function useEntityForm<T extends z.ZodType<any, any>>({
     defaultValues,
   })
 
+  // Track the initial data ID to only reset when switching items
+  const initialDataIdRef = useRef<string | undefined>(
+    initialData && "id" in initialData ? (initialData.id as string) : undefined
+  )
+
   useEffect(() => {
-    form.reset(defaultValues)
-  }, [defaultValues, form])
+    const currentId =
+      initialData && "id" in initialData
+        ? (initialData.id as string)
+        : undefined
+
+    // Only reset if we're switching to a different item or opening a new form
+    if (currentId !== initialDataIdRef.current) {
+      initialDataIdRef.current = currentId
+      form.reset(defaultValues)
+    }
+  }, [initialData, defaultValues, form])
 
   return form
 }

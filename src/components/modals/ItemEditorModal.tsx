@@ -3,28 +3,24 @@ import { useMemo } from "react"
 import { withDerivedPlacement } from "@/lib/board"
 import { ItemForm } from "@/components/forms/ItemForm"
 import { FormModal } from "@/components/modals/FormModal"
+import { useBoardStore } from "@/stores/useBoardStore"
 import type { ItemDraft } from "@/lib/schemas"
-import type { Column, Item, ItemUpdate, NewItem } from "@/types/domain"
 
 interface ItemEditorModalProps {
   isOpen: boolean
   editingItemId: string | null
-  columns: Record<string, Column>
-  items: Record<string, Item>
-  addItem: (item: NewItem, id: string) => void
-  updateItem: (id: string, updates: ItemUpdate) => void
   onClose: () => void
 }
 
 export function ItemEditorModal({
   isOpen,
   editingItemId,
-  columns,
-  items,
-  addItem,
-  updateItem,
   onClose,
 }: ItemEditorModalProps) {
+  const columns = useBoardStore((state) => state.columns)
+  const items = useBoardStore((state) => state.items)
+  const addItem = useBoardStore((state) => state.addItem)
+  const updateItem = useBoardStore((state) => state.updateItem)
   const formId = "item-editor-form"
 
   const editingItem = useMemo(
