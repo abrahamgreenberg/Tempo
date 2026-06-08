@@ -1,73 +1,76 @@
-What I'd Do for the MVP
+# Tempo Rewrite Roadmap
 
-I wouldn't even start with Express immediately.
+## Vision
 
-Phase 1
+Tempo is a personal timetable and day-planning application.
 
-React state only:
+The goal of the rewrite is to rebuild the application using a modern TypeScript-first stack while following a scalable architecture that can evolve from:
 
-const [blocks, setBlocks] = useState(...)
-const [items, setItems] = useState(...)
+```text
+Local React State
+    ↓
+Local Storage
+    ↓
+Express API
+    ↓
+PostgreSQL
+    ↓
+AWS Deployment
+```
 
-Get:
+The project serves two purposes:
 
-create block
-create item
-edit item
-drag item
+1. Build a genuinely useful productivity application.
+2. Learn modern frontend, backend, database, and cloud technologies through one cohesive project.
 
-working first.
+---
 
-Phase 2
+# Tech Stack
 
-Introduce a repository layer.
+## Frontend
 
-Instead of:
+- React 19
+- TypeScript
+- Vite
+- Tailwind CSS v4
+- Base UI
+- React Hook Form
+- Zod
 
-setItems(...)
+## Drag & Drop
 
-everywhere, create:
+- dnd-kit
 
-itemRepository.create(...)
-itemRepository.update(...)
-itemRepository.move(...)
+## Utilities
 
-Initially:
+- CUID2 for identifiers
+- clsx
+- tailwind-merge
 
-LocalStorageRepository
+## Planned Backend
 
-stores to localStorage.
+- Express.js
+- TypeScript
 
-Phase 3
+## Planned Database
 
-Replace implementation:
+- PostgreSQL
+- Prisma
 
-ApiRepository
+## Planned Cloud Infrastructure
 
-which talks to Express.
+- AWS Cognito (authentication)
+- AWS RDS (PostgreSQL)
+- AWS S3 + CloudFront (frontend hosting)
+- AWS EC2 or ECS (backend hosting)
 
-The UI doesn't change.
+---
 
-Phase 4
+# Architecture
 
-Express stores data in memory.
+The application should maintain a clean separation between UI, data access, and persistence.
 
-let items: Item[] = [];
-
-Build routes:
-
-GET /items
-POST /items
-PATCH /items/:id
-DELETE /items/:id
-Phase 5
-
-Swap memory for Prisma/Postgres.
-
-Again, the frontend doesn't change.
-
-This layered approach is one of the biggest architectural lessons you can learn from a project like Tempo. If you separate:
-
+```text
 UI
 ↓
 Repository
@@ -75,5 +78,300 @@ Repository
 API
 ↓
 Database
+```
 
-you'll be able to evolve the app from a simple React prototype all the way to an AWS-hosted application without repeatedly rewriting the frontend.
+The frontend should never care where data comes from.
+
+Examples:
+
+```ts
+itemRepository.create(...)
+itemRepository.update(...)
+itemRepository.move(...)
+```
+
+Today these methods may write to local state.
+
+Later they may write to localStorage.
+
+Eventually they may call an Express API.
+
+The UI remains unchanged.
+
+---
+
+# Data Model
+
+Current model:
+
+```text
+Day
+ └── Time Block
+       └── Item
+```
+
+Example:
+
+```text
+Monday
+
+Morning
+├── Run (45m)
+├── Breakfast (30m)
+
+Work
+├── Deep Work (120m)
+├── Email (30m)
+```
+
+Proposed entities:
+
+```ts
+Day
+{
+  id: string
+  name: string
+}
+```
+
+```ts
+List (TimeBlock)
+{
+  id: string
+  dayId: string
+
+  name: string
+
+  startTime: number
+  endTime: number
+
+  position: number
+}
+```
+
+```ts
+Item
+{
+  id: string
+  blockId: string
+
+  name: string
+
+  durationMinutes: number
+
+  position: number
+}
+```
+
+---
+
+# Current Status
+
+## Phase 1: React MVP
+
+### Completed
+
+- React + TypeScript setup
+- Modern project structure
+- Tailwind setup
+- Component architecture
+- Drag-and-drop foundation
+- Sortable item ordering
+- CUID2 integration
+- Core UI direction
+
+### In Progress
+
+Zustand migration - for cleaner architecture as it scales
+
+Timeline-specific scheduling logic.
+
+The current drag-and-drop system works mechanically, but scheduling constraints still need to be implemented.
+
+Examples:
+
+- Prevent block overflow
+- Prevent impossible schedules
+- Detect time conflicts
+- Visual feedback during drag
+- Correct rendering of long-duration items
+
+---
+
+# Immediate Tasks
+
+## 1. Timeline Engine
+
+Implement scheduling calculations.
+
+Example:
+
+```text
+Morning Block
+09:00 - 12:00
+
+Run         45m
+Breakfast   30m
+Study       120m
+```
+
+Need to calculate:
+
+- Start time
+- End time
+- Remaining capacity
+- Overflow conditions
+
+---
+
+## 2. Overflow Detection
+
+Detect when:
+
+```text
+Block Capacity = 180m
+
+Items Total = 240m
+```
+
+Possible approaches:
+
+- Show warning state
+- Prevent insertion
+- Allow overflow with visual indicator
+
+Decision TBD.
+
+---
+
+## 3. Long Item Rendering
+
+Determine how large activities should render.
+
+Example:
+
+```text
+Study
+180 minutes
+```
+
+Options:
+
+- Proportional height
+- Minimum height
+- Collapsed mode
+- Zoomed timeline
+
+Decision TBD.
+
+---
+
+## 4. Drag Validation
+
+Before allowing a drop:
+
+```text
+Can this item fit here?
+```
+
+Checks:
+
+- Available space
+- Time constraints
+- Scheduling rules
+
+Future drops should be validated before committing state changes.
+
+---
+
+# Future Roadmap
+
+## Phase 2: Repository Layer
+
+Introduce:
+
+```ts
+itemRepository.create()
+itemRepository.update()
+itemRepository.delete()
+itemRepository.move()
+```
+
+Initial implementation:
+
+```text
+LocalStorageRepository
+```
+
+Persistence survives page refreshes.
+
+---
+
+## Phase 3: API Layer
+
+Introduce Express backend.
+
+Routes:
+
+```http
+GET    /items
+POST   /items
+PATCH  /items/:id
+DELETE /items/:id
+```
+
+Backend initially stores data in memory.
+
+---
+
+## Phase 4: Database
+
+Replace memory storage with:
+
+- PostgreSQL
+- Prisma
+
+No frontend changes should be required.
+
+---
+
+## Phase 5: Authentication
+
+Add:
+
+- User accounts
+- Login
+- Schedule ownership
+
+Likely using AWS Cognito.
+
+---
+
+## Phase 6: AWS Deployment
+
+Frontend:
+
+- S3
+- CloudFront
+
+Backend:
+
+- EC2 or ECS
+
+Database:
+
+- RDS PostgreSQL
+
+---
+
+# Guiding Principle
+
+Tempo should prioritize:
+
+1. Simplicity
+2. Correctness
+3. Incremental improvement
+
+Avoid building infrastructure before it is needed.
+
+Every phase should leave the application in a working, deployable state.
