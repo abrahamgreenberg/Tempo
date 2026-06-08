@@ -1,3 +1,4 @@
+import { memo } from "react"
 import { useSortable } from "@dnd-kit/react/sortable"
 import {
   Card,
@@ -10,7 +11,7 @@ import { HugeiconsIcon } from "@hugeicons/react"
 import { Pencil, Trash2 } from "@hugeicons/core-free-icons"
 import type { Item as ItemType } from "@/types/domain"
 
-export const Item = ({
+export const Item = memo(function Item({
   id,
   index,
   column,
@@ -24,7 +25,7 @@ export const Item = ({
   item: ItemType
   onEdit: (id: string) => void
   onDelete: (id: string) => void
-}) => {
+}) {
   const { ref, isDragging } = useSortable({
     id,
     index,
@@ -76,6 +77,6 @@ export const Item = ({
       </CardHeader>
     </Card>
   )
-}
+})
 
 export default Item

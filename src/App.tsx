@@ -1,116 +1,59 @@
 import { DragDropProvider } from "@dnd-kit/react"
 import { move } from "@dnd-kit/helpers"
-import { useState } from "react"
+import { useCallback, useState } from "react"
+import {
+  createColumnItemsMap,
+  resolveItemMoveOperation,
+} from "@/lib/board-state"
 import Column from "./Column"
 import Item from "./Item"
 import { useAppState } from "@/hooks/useAppState"
-import { EditModal } from "@/components/modals/EditModal"
-import type { ItemInputSchema } from "@/lib/schemas"
-import type { z } from "zod"
+import { ItemEditorModal } from "@/components/modals/ItemEditorModal"
 
 export function App() {
-  const {
-    state,
-    moveItem,
-    updateItem,
-    deleteItem,
-    addItem,
-    openItemEditor,
-    closeItemEditor,
-  } = useAppState()
-  const [isModalOpen, setIsModalOpen] = useState(false)
+  const { state, moveItem, updateItem, deleteItem, addItem } = useAppState()
   const [editingItemId, setEditingItemId] = useState<string | null>(null)
+  const [isItemEditorOpen, setIsItemEditorOpen] = useState(false)
 
-  const handleEditItem = (id: string) => {
+  const handleOpenItemEditor = useCallback((id: string) => {
     setEditingItemId(id)
-    setIsModalOpen(true)
-  }
+    setIsItemEditorOpen(true)
+  }, [])
 
-  const handleDeleteItem = (id: string) => {
-    deleteItem(id)
-  }
-
-  const handleSaveItem = (
-    data: z.infer<typeof ItemInputSchema> & { listId: string }
-  ) => {
-    if (editingItemId) {
-      // Update existing item
-      updateItem(editingItemId, {
-        name: data.name,
-        durationMinutes: data.durationMinutes,
-        listId: data.listId,
-      })
-    } else {
-      // Create new item - generate a simple ID for demo
-      const newId = `itm_${Date.now()}`
-      addItem(
-        {
-          name: data.name,
-          durationMinutes: data.durationMinutes,
-          listId: data.listId,
-          position: 0,
-        },
-        newId
-      )
-    }
-    setIsModalOpen(false)
+  const handleCloseItemEditor = useCallback(() => {
     setEditingItemId(null)
-  }
+    setIsItemEditorOpen(false)
+  }, [])
 
-  const handleCloseModal = () => {
-    setIsModalOpen(false)
-    setEditingItemId(null)
-  }
-
-  const editingItem = editingItemId ? state.items[editingItemId] : undefined
+  const handleDeleteItem = useCallback(
+    (id: string) => {
+      deleteItem(id)
+    },
+    [deleteItem]
+  )
 
   return (
     <div className="flex min-h-svh w-full items-center justify-center bg-muted/30 p-6">
       <section className="grid w-full max-w-6xl grid-cols-3 gap-5 rounded-lg border border-border/70 bg-background/95 p-5 shadow-lg sm:p-8">
         <DragDropProvider
           onDragOver={(event) => {
-            // Extract itemIds from columns into the format dnd-kit expects
-            const columnItemsMap = Object.entries(state.columns).reduce(
-              (acc, [colId, col]) => ({
-                ...acc,
-                [colId]: col.itemIds,
-              }),
-              {} as Record<string, string[]>
-            )
-
+            const columnItemsMap = createColumnItemsMap(state.columns)
             const result = move(columnItemsMap, event)
-            if (result) {
-              // Find what changed and dispatch moveItem
-              const entries = Object.entries(result)
-              for (const [colId, newItemIds] of entries) {
-                const oldItemIds = state.columns[colId].itemIds
-                const newIds = newItemIds as string[]
-                if (JSON.stringify(oldItemIds) !== JSON.stringify(newIds)) {
-                  // Find the item that was added to this column
-                  const movedItem = newIds.find(
-                    (id) => !oldItemIds.includes(id)
-                  )
-                  if (movedItem) {
-                    // Find which column it came from
-                    for (const [oldColId, oldIds] of Object.entries(
-                      state.columns
-                    )) {
-                      if (
-                        oldIds.itemIds.includes(movedItem) &&
-                        oldColId !== colId
-                      ) {
-                        moveItem(
-                          movedItem,
-                          oldColId,
-                          colId,
-                          newIds.indexOf(movedItem)
-                        )
-                        return
-                      }
-                    }
-                  }
-                }
-              }
+            if (!result) {
+              return
+            }
+
+            const operation = resolveItemMoveOperation(
+              state.columns,
+              result as Record<string, string[]>
+            )
+            if (operation) {
+              moveItem(
+                operation.itemId,
+                operation.fromColumn,
+                operation.toColumn,
+                operation.toIndex
+              )
             }
           }}
         >
@@ -125,7 +68,7 @@ export function App() {
                     index={index}
                     column={columnId}
                     item={item}
-                    onEdit={handleEditItem}
+                    onEdit={handleOpenItemEditor}
                     onDelete={handleDeleteItem}
                   />
                 ) : null
@@ -135,14 +78,14 @@ export function App() {
         </DragDropProvider>
       </section>
 
-      <EditModal
-        isOpen={isModalOpen}
-        mode={editingItemId ? "edit" : "create"}
-        entityType="item"
-        item={editingItem}
+      <ItemEditorModal
+        isOpen={isItemEditorOpen}
+        editingItemId={editingItemId}
         columns={state.columns}
-        onClose={handleCloseModal}
-        onSave={handleSaveItem}
+        items={state.items}
+        addItem={addItem}
+        updateItem={updateItem}
+        onClose={handleCloseItemEditor}
       />
     </div>
   )

@@ -11,13 +11,15 @@ export const ItemSchema = z.object({
     .int()
     .positive("Duration must be a positive number"),
   listId: z.string().min(1, "List ID is required"),
-  position: z.number().int().nonnegative("Position must be non-negative"),
 })
 
 export const ItemInputSchema = ItemSchema.omit({
   id: true,
   listId: true,
-  position: true,
+})
+
+export const ItemDraftSchema = ItemInputSchema.extend({
+  listId: z.string().min(1, "List is required"),
 })
 
 export const ColumnSchema = z.object({
@@ -53,5 +55,6 @@ export const ColumnInputSchema = ColumnSchema.omit({
 
 export type Item = z.infer<typeof ItemSchema>
 export type ItemInput = z.infer<typeof ItemInputSchema>
+export type ItemDraft = z.infer<typeof ItemDraftSchema>
 export type Column = z.infer<typeof ColumnSchema>
 export type ColumnInput = z.infer<typeof ColumnInputSchema>
