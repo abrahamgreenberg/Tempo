@@ -1,22 +1,14 @@
 import { DragDropProvider } from "@dnd-kit/react"
-import { move } from "@dnd-kit/helpers"
 import { useModal } from "@/hooks/useModal"
-import {
-  createColumnItemsMap,
-  resolveItemMoveOperation,
-} from "@/lib/board-state"
 import Column from "./Column"
 import Item from "./Item"
-import { useBoardStore } from "@/stores/useBoardStore"
+import { useBoardData } from "@/stores/useBoardStore"
 import { ItemEditorModal } from "@/components/modals/ItemEditorModal"
 import { ListEditorModal } from "@/components/modals/ListEditorModal"
 import { Button } from "@/components/ui/button"
 
 export function App() {
-  const columns = useBoardStore((state) => state.columns)
-  const items = useBoardStore((state) => state.items)
-  const moveItem = useBoardStore((state) => state.moveItem)
-  const deleteItem = useBoardStore((state) => state.deleteItem)
+  const { columns, items, deleteItem, handleDragOver } = useBoardData()
 
   const itemModal = useModal<string>()
   const listModal = useModal<string>()
@@ -27,28 +19,7 @@ export function App() {
         + New List
       </Button>
       <section className="grid w-full max-w-6xl grid-cols-3 gap-5 rounded-lg border border-border/70 bg-background/95 p-5 shadow-lg sm:p-8">
-        <DragDropProvider
-          onDragOver={(event) => {
-            const columnItemsMap = createColumnItemsMap(columns)
-            const result = move(columnItemsMap, event)
-            if (!result) {
-              return
-            }
-
-            const operation = resolveItemMoveOperation(
-              columns,
-              result as Record<string, string[]>
-            )
-            if (operation) {
-              moveItem(
-                operation.itemId,
-                operation.fromColumn,
-                operation.toColumn,
-                operation.toIndex
-              )
-            }
-          }}
-        >
+        <DragDropProvider onDragOver={handleDragOver}>
           {Object.entries(columns).map(([columnId, column]) => (
             <Column
               key={columnId}

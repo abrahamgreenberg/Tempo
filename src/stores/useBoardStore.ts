@@ -1,5 +1,6 @@
 import { create } from "zustand"
 import { devtools, persist } from "zustand/middleware"
+import { move } from "@dnd-kit/helpers"
 import {
   addItemToBoard,
   deleteColumnFromBoard,
@@ -7,6 +8,8 @@ import {
   moveItemInBoard,
   updateColumnInBoard,
   updateItemInBoard,
+  createColumnItemsMap,
+  resolveItemMoveOperation,
 } from "@/lib/board-state"
 import type { AppState, Column, ItemUpdate, NewItem } from "@/types/domain"
 
@@ -73,6 +76,7 @@ interface BoardStore extends AppState {
     toColumn: string,
     toIndex: number
   ) => void
+  handleDragOver: (event: Parameters<typeof move>[1]) => void
 }
 
 export const useBoardStore = create<BoardStore>()(
@@ -112,6 +116,25 @@ export const useBoardStore = create<BoardStore>()(
           set((state) =>
             moveItemInBoard(state, { itemId, fromColumn, toColumn, toIndex })
           ),
+
+        handleDragOver: (event) =>
+          set((state) => {
+            const columnItemsMap = createColumnItemsMap(state.columns)
+            const result = move(columnItemsMap, event)
+            if (!result) {
+              return state
+            }
+
+            const operation = resolveItemMoveOperation(
+              state.columns,
+              result as Record<string, string[]>
+            )
+            if (!operation) {
+              return state
+            }
+
+            return moveItemInBoard(state, operation)
+          }),
       }),
       {
         name: "tempo-board-storage",
@@ -126,3 +149,13 @@ export const selectColumn = (id: string) => (state: BoardStore) =>
 export const selectItem = (id: string) => (state: BoardStore) => state.items[id]
 export const selectAllColumns = (state: BoardStore) => state.columns
 export const selectAllItems = (state: BoardStore) => state.items
+
+// Custom hook for component needs
+export function useBoardData() {
+  const columns = useBoardStore((state) => state.columns)
+  const items = useBoardStore((state) => state.items)
+  const deleteItem = useBoardStore((state) => state.deleteItem)
+  const handleDragOver = useBoardStore((state) => state.handleDragOver)
+  
+  return { columns, items, deleteItem, handleDragOver }
+}
