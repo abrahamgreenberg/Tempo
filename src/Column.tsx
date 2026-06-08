@@ -29,18 +29,20 @@ export const Column = ({
       ref={ref}
     >
       <div className="mb-2">
-        <h2 className="text-lg font-semibold">{column.name}</h2>
-        <Button
-          size="sm"
-          variant="ghost"
-          onClick={(e) => {
-            e.stopPropagation()
-            onEdit(id)
-          }}
-          className="h-7 w-7 p-0"
-        >
-          <HugeiconsIcon icon={Pencil} size={16} />
-        </Button>
+        <div className="flex items-start justify-between gap-2">
+          <h2 className="text-lg font-semibold">{column.name}</h2>
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={(e) => {
+              e.stopPropagation()
+              onEdit(id)
+            }}
+            className="h-7 w-7 p-0"
+          >
+            <HugeiconsIcon icon={Pencil} size={16} />
+          </Button>
+        </div>
         <p className="text-xs text-muted-foreground">
           {column.startTime} - {column.endTime}
         </p>

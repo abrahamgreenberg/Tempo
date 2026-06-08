@@ -1,6 +1,17 @@
 import { DragDropProvider } from "@dnd-kit/react"
 import { move } from "@dnd-kit/helpers"
 import { useModal } from "@/hooks/useModal"
+import { useCallback, useState } from "react"
+import {
+  createColumnItemsMap,
+  resolveItemMoveOperation,
+} from "@/lib/board-state"
+import Column from "./Column"
+import Item from "./Item"
+import { useAppState } from "@/hooks/useAppState"
+import { ItemEditorModal } from "@/components/modals/ItemEditorModal"
+import { ListEditorModal } from "@/components/modals/ListEditorModal"
+import { Button } from "@/components/ui/button"
 
 export function App() {
   const {
