@@ -36,6 +36,7 @@ The project serves two purposes:
 - Base UI
 - React Hook Form
 - Zod
+- Zustand
 
 ## Drag & Drop
 
@@ -181,8 +182,6 @@ Item
 - Core UI direction
 
 ### In Progress
-
-Zustand migration - for cleaner architecture as it scales
 
 Timeline-specific scheduling logic.
 

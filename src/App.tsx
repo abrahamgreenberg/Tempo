@@ -1,29 +1,29 @@
 import { DragDropProvider } from "@dnd-kit/react"
 import { move } from "@dnd-kit/helpers"
 import { useModal } from "@/hooks/useModal"
-import { useCallback, useState } from "react"
+import { useCallback } from "react"
 import {
   createColumnItemsMap,
   resolveItemMoveOperation,
 } from "@/lib/board-state"
 import Column from "./Column"
 import Item from "./Item"
-import { useAppState } from "@/hooks/useAppState"
+import { useBoardStore } from "@/stores/useBoardStore"
 import { ItemEditorModal } from "@/components/modals/ItemEditorModal"
 import { ListEditorModal } from "@/components/modals/ListEditorModal"
 import { Button } from "@/components/ui/button"
 
 export function App() {
-  const {
-    state,
-    moveItem,
-    updateItem,
-    deleteItem,
-    addItem,
-    addColumn,
-    updateColumn,
-    deleteColumn,
-  } = useAppState()
+  const columns = useBoardStore((state) => state.columns)
+  const items = useBoardStore((state) => state.items)
+  const moveItem = useBoardStore((state) => state.moveItem)
+  const updateItem = useBoardStore((state) => state.updateItem)
+  const deleteItem = useBoardStore((state) => state.deleteItem)
+  const addItem = useBoardStore((state) => state.addItem)
+  const addColumn = useBoardStore((state) => state.addColumn)
+  const updateColumn = useBoardStore((state) => state.updateColumn)
+  const deleteColumn = useBoardStore((state) => state.deleteColumn)
+
   const itemModal = useModal<string>()
   const listModal = useModal<string>()
 
@@ -42,14 +42,14 @@ export function App() {
       <section className="grid w-full max-w-6xl grid-cols-3 gap-5 rounded-lg border border-border/70 bg-background/95 p-5 shadow-lg sm:p-8">
         <DragDropProvider
           onDragOver={(event) => {
-            const columnItemsMap = createColumnItemsMap(state.columns)
+            const columnItemsMap = createColumnItemsMap(columns)
             const result = move(columnItemsMap, event)
             if (!result) {
               return
             }
 
             const operation = resolveItemMoveOperation(
-              state.columns,
+              columns,
               result as Record<string, string[]>
             )
             if (operation) {
@@ -62,7 +62,7 @@ export function App() {
             }
           }}
         >
-          {Object.entries(state.columns).map(([columnId, column]) => (
+          {Object.entries(columns).map(([columnId, column]) => (
             <Column
               key={columnId}
               id={columnId}
@@ -70,7 +70,7 @@ export function App() {
               onEdit={listModal.open}
             >
               {column.itemIds.map((itemId, index) => {
-                const item = state.items[itemId]
+                const item = items[itemId]
                 return item ? (
                   <Item
                     key={itemId}
@@ -91,8 +91,8 @@ export function App() {
       <ItemEditorModal
         isOpen={itemModal.isOpen}
         editingItemId={itemModal.editingId}
-        columns={state.columns}
-        items={state.items}
+        columns={columns}
+        items={items}
         addItem={addItem}
         updateItem={updateItem}
         onClose={itemModal.close}
@@ -101,7 +101,7 @@ export function App() {
       <ListEditorModal
         isOpen={listModal.isOpen}
         editingColumnId={listModal.editingId}
-        columns={state.columns}
+        columns={columns}
         addColumn={addColumn}
         updateColumn={updateColumn}
         deleteColumn={deleteColumn}

@@ -20,13 +20,13 @@ export function useEntityForm<T extends z.ZodType<any, any>>({
   )
 
   const form = useForm<z.infer<T>>({
-    resolver: zodResolver(schema),
+    resolver: zodResolver(schema) as any,
     defaultValues,
   })
 
   useEffect(() => {
     form.reset(defaultValues)
-  }, [defaultValues, form.reset])
+  }, [defaultValues, form])
 
   return form
 }

@@ -29,18 +29,3 @@ export interface AppState {
   columns: Record<string, Column>
   items: Record<string, Item>
 }
-
-export type AppAction =
-  | { type: "ADD_ITEM"; payload: { item: Item; listId: string } }
-  | { type: "UPDATE_ITEM"; id: string; payload: ItemUpdate }
-  | { type: "DELETE_ITEM"; id: string }
-  | { type: "ADD_COLUMN"; payload: Column }
-  | { type: "UPDATE_COLUMN"; id: string; payload: Partial<Column> }
-  | { type: "DELETE_COLUMN"; id: string }
-  | {
-      type: "MOVE_ITEM"
-      itemId: string
-      fromColumn: string
-      toColumn: string
-      toIndex: number
-    }
