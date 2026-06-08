@@ -1,10 +1,8 @@
-import { useEffect, useMemo } from "react"
-import { useForm } from "react-hook-form"
-import { zodResolver } from "@hookform/resolvers/zod"
 import { Input } from "@/components/ui/input"
 import { ColumnInputSchema, type ColumnInput } from "@/lib/schemas"
 import type { Column } from "@/types/domain"
 import { FormField } from "./FormField.tsx"
+import { useEntityForm } from "@/hooks/useEntityForm"
 
 type ListFormData = Partial<Column>
 
@@ -19,29 +17,20 @@ export function ListForm({
   onSubmit,
   formId = "list-form",
 }: ListFormProps) {
-  const defaultValues = useMemo(
-    () => ({
-      name: initialData?.name || "",
-      startTime: initialData?.startTime || "09:00",
-      endTime: initialData?.endTime || "17:00",
-      date: initialData?.date || new Date().toISOString().split("T")[0],
-    }),
-    [initialData]
-  )
-
   const {
     register,
     handleSubmit,
-    reset,
     formState: { errors },
-  } = useForm<ColumnInput>({
-    resolver: zodResolver(ColumnInputSchema),
-    defaultValues,
+  } = useEntityForm({
+    schema: ColumnInputSchema,
+    initialData,
+    defaultValues: {
+      name: "",
+      startTime: "09:00",
+      endTime: "17:00",
+      date: new Date().toISOString().split("T")[0],
+    },
   })
-
-  useEffect(() => {
-    reset(defaultValues)
-  }, [defaultValues, reset])
 
   return (
     <form id={formId} onSubmit={handleSubmit(onSubmit)} className="space-y-4">

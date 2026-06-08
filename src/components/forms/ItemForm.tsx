@@ -1,7 +1,4 @@
-import { useEffect, useMemo } from "react"
-import { Controller, useForm } from "react-hook-form"
-import { zodResolver } from "@hookform/resolvers/zod"
-import { Input } from "@/components/ui/input"
+import { Controller } from "react-hook-form"
 import {
   Select,
   SelectContent,
@@ -12,6 +9,8 @@ import {
 import { ItemDraftSchema, type ItemDraft } from "@/lib/schemas"
 import type { Column, Item } from "@/types/domain"
 import { FormField } from "./FormField.tsx"
+import { useEntityForm } from "@/hooks/useEntityForm"
+import { Input } from "../ui/input"
 
 type ItemFormData = Partial<Item> & { listId?: string }
 
@@ -28,29 +27,20 @@ export function ItemForm({
   onSubmit,
   formId = "item-form",
 }: ItemFormProps) {
-  const defaultValues = useMemo(
-    () => ({
-      name: initialData?.name || "",
-      durationMinutes: initialData?.durationMinutes || 30,
-      listId: initialData?.listId || Object.keys(columns)[0] || "",
-    }),
-    [columns, initialData]
-  )
-
   const {
     control,
     register,
     handleSubmit,
-    reset,
     formState: { errors },
-  } = useForm<ItemDraft>({
-    resolver: zodResolver(ItemDraftSchema),
-    defaultValues,
+  } = useEntityForm({
+    schema: ItemDraftSchema,
+    initialData,
+    defaultValues: {
+      name: "",
+      durationMinutes: 30,
+      listId: Object.keys(columns)[0] || "",
+    },
   })
-
-  useEffect(() => {
-    reset(defaultValues)
-  }, [defaultValues, reset])
 
   return (
     <form id={formId} onSubmit={handleSubmit(onSubmit)} className="space-y-4">
