@@ -199,30 +199,6 @@ Examples:
 
 # Immediate Tasks
 
-## 1. Timeline Engine
-
-Implement scheduling calculations.
-
-Example:
-
-```text
-Morning Block
-09:00 - 12:00
-
-Run         45m
-Breakfast   30m
-Study       120m
-```
-
-Need to calculate:
-
-- Start time
-- End time
-- Remaining capacity
-- Overflow conditions
-
----
-
 ## 2. Overflow Detection
 
 Detect when:

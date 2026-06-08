@@ -2,10 +2,48 @@ import { DragDropProvider } from "@dnd-kit/react"
 import { useModal } from "@/hooks/useModal"
 import Column from "./Column"
 import Item from "./Item"
-import { useBoardData } from "@/stores/useBoardStore"
+import {
+  useBoardData,
+  useBoardStore,
+  selectItemTimesData,
+} from "@/stores/useBoardStore"
 import { ItemEditorModal } from "@/components/modals/ItemEditorModal"
 import { ListEditorModal } from "@/components/modals/ListEditorModal"
 import { Button } from "@/components/ui/button"
+
+// Helper component that subscribes only to its own item times
+function ItemWithTimes({
+  itemId,
+  columnId,
+  index,
+  onEdit,
+  onDelete,
+}: {
+  itemId: string
+  columnId: string
+  index: number
+  onEdit: (id: string) => void
+  onDelete: (id: string) => void
+}) {
+  // Subscribe only to this specific item's times (pre-calculated in store)
+  const { startTime, endTime } = useBoardStore(selectItemTimesData(itemId))
+  const item = useBoardStore((state) => state.items[itemId])
+
+  if (!item) return null
+
+  return (
+    <Item
+      id={itemId}
+      index={index}
+      column={columnId}
+      item={item}
+      startTime={startTime}
+      endTime={endTime}
+      onEdit={onEdit}
+      onDelete={onDelete}
+    />
+  )
+}
 
 export function App() {
   const { columns, items, deleteItem, handleDragOver } = useBoardData()
@@ -27,20 +65,16 @@ export function App() {
               column={column}
               onEdit={listModal.open}
             >
-              {column.itemIds.map((itemId, index) => {
-                const item = items[itemId]
-                return item ? (
-                  <Item
-                    key={itemId}
-                    id={itemId}
-                    index={index}
-                    column={columnId}
-                    item={item}
-                    onEdit={itemModal.open}
-                    onDelete={deleteItem}
-                  />
-                ) : null
-              })}
+              {column.itemIds.map((itemId, index) => (
+                <ItemWithTimes
+                  key={itemId}
+                  itemId={itemId}
+                  index={index}
+                  columnId={columnId}
+                  onEdit={itemModal.open}
+                  onDelete={deleteItem}
+                />
+              ))}
             </Column>
           ))}
         </DragDropProvider>

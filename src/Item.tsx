@@ -10,7 +10,12 @@ import {
 } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { HugeiconsIcon } from "@hugeicons/react"
-import { Pencil, Trash2 } from "@hugeicons/core-free-icons"
+import {
+  Pencil,
+  Trash2,
+  Flag02FreeIcons,
+  CheckmarkSquare02Icon,
+} from "@hugeicons/core-free-icons"
 import type { Item as ItemType } from "@/types/domain"
 import { Badge } from "@/components/ui/badge"
 import { ButtonGroup } from "@/components/ui/button-group"
@@ -20,6 +25,8 @@ export const Item = memo(function Item({
   index,
   column,
   item,
+  startTime,
+  endTime,
   onEdit,
   onDelete,
 }: {
@@ -27,6 +34,8 @@ export const Item = memo(function Item({
   index: number
   column: string
   item: ItemType
+  startTime: string
+  endTime: string
   onEdit: (id: string) => void
   onDelete: (id: string) => void
 }) {
@@ -50,8 +59,13 @@ export const Item = memo(function Item({
       <CardHeader className="pb-3">
         <CardTitle className="text-base">{item.name}</CardTitle>
         <CardDescription>{item.durationMinutes} minutes</CardDescription>
-        <CardAction>
-          <Badge variant="blue">12:00</Badge>
+        <CardAction className="mt-2 flex items-center gap-2">
+          <Badge variant="green">
+            <HugeiconsIcon icon={Flag02FreeIcons} size={16} /> {startTime}
+          </Badge>
+          <Badge variant="blue">
+            <HugeiconsIcon icon={CheckmarkSquare02Icon} size={16} /> {endTime}
+          </Badge>
         </CardAction>
       </CardHeader>
       <CardFooter>

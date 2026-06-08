@@ -25,7 +25,13 @@ export interface Column {
   itemIds: string[] // array of item IDs in this column
 }
 
+export interface ItemTimes {
+  startTime: string
+  endTime: string
+}
+
 export interface AppState {
   columns: Record<string, Column>
   items: Record<string, Item>
+  itemTimes: Record<string, ItemTimes> // Pre-calculated times: itemId -> {startTime, endTime}
 }

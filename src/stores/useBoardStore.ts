@@ -9,11 +9,56 @@ import {
   updateColumnInBoard,
   updateItemInBoard,
   createColumnItemsMap,
-  resolveItemMoveOperation,
 } from "@/lib/board-state"
+import { calculateItemTimes } from "@/lib/utils"
 import type { AppState, Column, ItemUpdate, NewItem } from "@/types/domain"
 
-const initialState: AppState = {
+/**
+ * Calculate times for items in a specific column
+ * This is the core logic used by both calculateAllItemTimes and recalculateColumnItemTimes
+ */
+function calculateColumnItemTimes(
+  state: AppState,
+  columnId: string
+): Record<string, { startTime: string; endTime: string }> {
+  const column = state.columns[columnId]
+  if (!column) return {}
+
+  const columnTimes: Record<string, { startTime: string; endTime: string }> = {}
+
+  column.itemIds.forEach((itemId, index) => {
+    const item = state.items[itemId]
+    if (item) {
+      const precedingItemsDuration = column.itemIds
+        .slice(0, index)
+        .reduce((sum, id) => sum + (state.items[id]?.durationMinutes || 0), 0)
+
+      columnTimes[itemId] = calculateItemTimes(
+        column.startTime,
+        item.durationMinutes,
+        precedingItemsDuration
+      )
+    }
+  })
+
+  return columnTimes
+}
+
+/**
+ * Calculate all item times for the current state
+ * Uses the shared column calculation logic
+ */
+function calculateAllItemTimes(state: AppState) {
+  const itemTimes: Record<string, { startTime: string; endTime: string }> = {}
+
+  Object.keys(state.columns).forEach((columnId) => {
+    Object.assign(itemTimes, calculateColumnItemTimes(state, columnId))
+  })
+
+  return itemTimes
+}
+
+const baseInitialState = {
   columns: {
     "1a2b3c4d5e6f7g8h9i0j": {
       id: "1a2b3c4d5e6f7g8h9i0j",
@@ -62,6 +107,11 @@ const initialState: AppState = {
   },
 }
 
+const initialState: AppState = {
+  ...baseInitialState,
+  itemTimes: calculateAllItemTimes(baseInitialState as unknown as AppState),
+}
+
 interface BoardStore extends AppState {
   // Actions
   addItem: (item: NewItem, id: string) => void
@@ -77,6 +127,42 @@ interface BoardStore extends AppState {
     toIndex: number
   ) => void
   handleDragOver: (event: Parameters<typeof move>[1]) => void
+  recalculateColumnTimes: (columnId: string) => void
+}
+
+/**
+ * Find which column contains an item
+ */
+function findColumnContainingItem(
+  state: AppState,
+  itemId: string
+): string | null {
+  for (const [columnId, column] of Object.entries(state.columns)) {
+    if (column.itemIds.includes(itemId)) {
+      return columnId
+    }
+  }
+  return null
+}
+
+/**
+ * Recalculate times for specific columns only (not all columns)
+ * More efficient than recalculating everything
+ */
+function recalculateColumnItemTimes(
+  state: AppState,
+  columnIds: string[]
+): AppState {
+  const newItemTimes = { ...state.itemTimes }
+
+  columnIds.forEach((columnId) => {
+    Object.assign(newItemTimes, calculateColumnItemTimes(state, columnId))
+  })
+
+  return {
+    ...state,
+    itemTimes: newItemTimes,
+  }
 }
 
 export const useBoardStore = create<BoardStore>()(
@@ -84,17 +170,34 @@ export const useBoardStore = create<BoardStore>()(
     ...initialState,
 
     addItem: (item, id) =>
-      set((state) =>
-        addItemToBoard(state, {
+      set((state) => {
+        const newState = addItemToBoard(state, {
           item: { ...item, id },
           listId: item.listId,
         })
-      ),
+        // Only recalculate the column where the item was added
+        return recalculateColumnItemTimes(newState, [item.listId])
+      }),
 
     updateItem: (id, updates) =>
-      set((state) => updateItemInBoard(state, id, updates)),
+      set((state) => {
+        const columnId = findColumnContainingItem(state, id)
+        const newState = updateItemInBoard(state, id, updates)
+        // Recalculate the column if item is in one
+        return columnId
+          ? recalculateColumnItemTimes(newState, [columnId])
+          : newState
+      }),
 
-    deleteItem: (id) => set((state) => deleteItemFromBoard(state, id)),
+    deleteItem: (id) =>
+      set((state) => {
+        const columnId = findColumnContainingItem(state, id)
+        const newState = deleteItemFromBoard(state, id)
+        // Recalculate the column if item was in one
+        return columnId
+          ? recalculateColumnItemTimes(newState, [columnId])
+          : newState
+      }),
 
     addColumn: (column, id) =>
       set((state) => ({
@@ -103,17 +206,31 @@ export const useBoardStore = create<BoardStore>()(
           ...state.columns,
           [id]: { ...column, id, itemIds: [] },
         },
+        itemTimes: state.itemTimes, // No times to recalculate for empty column
       })),
 
     updateColumn: (id, updates) =>
-      set((state) => updateColumnInBoard(state, id, updates)),
+      set((state) => {
+        const newState = updateColumnInBoard(state, id, updates)
+        // Recalculate all items in this column due to potential time changes
+        return recalculateColumnItemTimes(newState, [id])
+      }),
 
     deleteColumn: (id) => set((state) => deleteColumnFromBoard(state, id)),
 
     moveItem: (itemId, fromColumn, toColumn, toIndex) =>
-      set((state) =>
-        moveItemInBoard(state, { itemId, fromColumn, toColumn, toIndex })
-      ),
+      set((state) => {
+        const newState = moveItemInBoard(state, {
+          itemId,
+          fromColumn,
+          toColumn,
+          toIndex,
+        })
+        // Recalculate both columns affected by the move
+        const columnsToRecalculate =
+          fromColumn === toColumn ? [fromColumn] : [fromColumn, toColumn]
+        return recalculateColumnItemTimes(newState, columnsToRecalculate)
+      }),
 
     handleDragOver: (event) =>
       set((state) => {
@@ -123,16 +240,49 @@ export const useBoardStore = create<BoardStore>()(
           return state
         }
 
-        const operation = resolveItemMoveOperation(
-          state.columns,
-          result as Record<string, string[]>
+        // Check if anything actually changed
+        let hasChanges = false
+        Object.entries(result as Record<string, string[]>).forEach(
+          ([columnId, newItemIds]) => {
+            const oldItemIds = state.columns[columnId]?.itemIds ?? []
+            if (JSON.stringify(oldItemIds) !== JSON.stringify(newItemIds)) {
+              hasChanges = true
+            }
+          }
         )
-        if (!operation) {
+
+        if (!hasChanges) {
           return state
         }
 
-        return moveItemInBoard(state, operation)
+        // Apply the move by updating columns to match result
+        const newColumns = { ...state.columns }
+        const changedColumns: string[] = []
+
+        Object.entries(result as Record<string, string[]>).forEach(
+          ([columnId, newItemIds]) => {
+            const oldItemIds = state.columns[columnId]?.itemIds ?? []
+            if (JSON.stringify(oldItemIds) !== JSON.stringify(newItemIds)) {
+              newColumns[columnId] = {
+                ...newColumns[columnId],
+                itemIds: newItemIds,
+              }
+              changedColumns.push(columnId)
+            }
+          }
+        )
+
+        const newState: AppState = {
+          ...state,
+          columns: newColumns,
+        }
+
+        // Recalculate times only for changed columns
+        return recalculateColumnItemTimes(newState, changedColumns)
       }),
+
+    recalculateColumnTimes: (columnId: string) =>
+      set((state) => recalculateColumnItemTimes(state, [columnId])),
   }))
 )
 
@@ -140,6 +290,8 @@ export const useBoardStore = create<BoardStore>()(
 export const selectColumn = (id: string) => (state: BoardStore) =>
   state.columns[id]
 export const selectItem = (id: string) => (state: BoardStore) => state.items[id]
+export const selectItemTimesData = (id: string) => (state: BoardStore) =>
+  state.itemTimes[id] || { startTime: "", endTime: "" }
 export const selectAllColumns = (state: BoardStore) => state.columns
 export const selectAllItems = (state: BoardStore) => state.items
 
