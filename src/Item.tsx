@@ -17,6 +17,7 @@ import {
   CheckmarkSquare02Icon,
 } from "@hugeicons/core-free-icons"
 import type { Item as ItemType } from "@/types/domain"
+import type { Time } from "@/lib/utils"
 import { Badge } from "@/components/ui/badge"
 import { ButtonGroup } from "@/components/ui/button-group"
 
@@ -29,13 +30,15 @@ export const Item = memo(function Item({
   endTime,
   onEdit,
   onDelete,
+  columnEndTime,
 }: {
   id: string
   index: number
   column: string
   item: ItemType
-  startTime: string
-  endTime: string
+  startTime: Time
+  endTime: Time
+  columnEndTime: Time
   onEdit: (id: string) => void
   onDelete: (id: string) => void
 }) {
@@ -47,10 +50,15 @@ export const Item = memo(function Item({
     group: column,
   })
 
+  const isOverColumnEnd = endTime.greaterThan(columnEndTime)
+  const style =
+    "cursor-grab active:cursor-grabbing" +
+    (isOverColumnEnd ? " border border-red-500" : "")
+
   return (
     <Card
       ref={ref}
-      className="cursor-grab active:cursor-grabbing"
+      className={style}
       data-dragging={isDragging}
       style={{
         opacity: isDragging ? 0.5 : 1,
@@ -61,10 +69,12 @@ export const Item = memo(function Item({
         <CardDescription>{item.durationMinutes} minutes</CardDescription>
         <CardAction className="mt-2 flex items-center gap-2">
           <Badge variant="green">
-            <HugeiconsIcon icon={Flag02FreeIcons} size={16} /> {startTime}
+            <HugeiconsIcon icon={Flag02FreeIcons} size={16} />{" "}
+            {startTime.toString()}
           </Badge>
           <Badge variant="blue">
-            <HugeiconsIcon icon={CheckmarkSquare02Icon} size={16} /> {endTime}
+            <HugeiconsIcon icon={CheckmarkSquare02Icon} size={16} />{" "}
+            {endTime.toString()}
           </Badge>
         </CardAction>
       </CardHeader>

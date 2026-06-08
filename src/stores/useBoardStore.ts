@@ -10,8 +10,14 @@ import {
   updateItemInBoard,
   createColumnItemsMap,
 } from "@/lib/board-state"
-import { calculateItemTimes } from "@/lib/utils"
-import type { AppState, Column, ItemUpdate, NewItem } from "@/types/domain"
+import { calculateItemTimes, Time } from "@/lib/utils"
+import type {
+  AppState,
+  Column,
+  ItemUpdate,
+  NewItem,
+  ItemTimes,
+} from "@/types/domain"
 
 /**
  * Calculate times for items in a specific column
@@ -20,11 +26,11 @@ import type { AppState, Column, ItemUpdate, NewItem } from "@/types/domain"
 function calculateColumnItemTimes(
   state: AppState,
   columnId: string
-): Record<string, { startTime: string; endTime: string }> {
+): Record<string, ItemTimes> {
   const column = state.columns[columnId]
   if (!column) return {}
 
-  const columnTimes: Record<string, { startTime: string; endTime: string }> = {}
+  const columnTimes: Record<string, ItemTimes> = {}
 
   column.itemIds.forEach((itemId, index) => {
     const item = state.items[itemId]
@@ -48,8 +54,8 @@ function calculateColumnItemTimes(
  * Calculate all item times for the current state
  * Uses the shared column calculation logic
  */
-function calculateAllItemTimes(state: AppState) {
-  const itemTimes: Record<string, { startTime: string; endTime: string }> = {}
+function calculateAllItemTimes(state: AppState): Record<string, ItemTimes> {
+  const itemTimes: Record<string, ItemTimes> = {}
 
   Object.keys(state.columns).forEach((columnId) => {
     Object.assign(itemTimes, calculateColumnItemTimes(state, columnId))
@@ -63,8 +69,8 @@ const baseInitialState = {
     "1a2b3c4d5e6f7g8h9i0j": {
       id: "1a2b3c4d5e6f7g8h9i0j",
       name: "Morning",
-      startTime: "09:00",
-      endTime: "12:00",
+      startTime: new Time(9, 0),
+      endTime: new Time(12, 0),
       position: 0,
       date: "2025-01-01",
       itemIds: ["abc1def2ghi3jkl4mno5"],
@@ -72,8 +78,8 @@ const baseInitialState = {
     "2k3l4m5n6o7p8q9r0s1t": {
       id: "2k3l4m5n6o7p8q9r0s1t",
       name: "Afternoon",
-      startTime: "14:00",
-      endTime: "17:00",
+      startTime: new Time(14, 0),
+      endTime: new Time(17, 0),
       position: 1,
       date: "2025-01-01",
       itemIds: ["ghi2jkl3mno4pqr5stu6"],
@@ -81,8 +87,8 @@ const baseInitialState = {
     "3u4v5w6x7y8z9a0b1c2d": {
       id: "3u4v5w6x7y8z9a0b1c2d",
       name: "Evening",
-      startTime: "18:00",
-      endTime: "20:00",
+      startTime: new Time(18, 0),
+      endTime: new Time(20, 0),
       position: 2,
       date: "2025-01-01",
       itemIds: ["pqr6stu7vwx8yz9abc0def"],
@@ -291,7 +297,7 @@ export const selectColumn = (id: string) => (state: BoardStore) =>
   state.columns[id]
 export const selectItem = (id: string) => (state: BoardStore) => state.items[id]
 export const selectItemTimesData = (id: string) => (state: BoardStore) =>
-  state.itemTimes[id] || { startTime: "", endTime: "" }
+  state.itemTimes[id] || { startTime: new Time(0, 0), endTime: new Time(0, 0) }
 export const selectAllColumns = (state: BoardStore) => state.columns
 export const selectAllItems = (state: BoardStore) => state.items
 

@@ -44,7 +44,7 @@ export const Column = ({
           </Button>
         </div>
         <p className="text-xs text-muted-foreground">
-          {column.startTime} - {column.endTime}
+          {column.startTime.toString()} - {column.endTime.toString()}
         </p>
       </div>
       <div className="flex flex-col gap-3">{children}</div>

@@ -1,3 +1,5 @@
+import { Time } from "@/lib/utils"
+
 export interface Item {
   id: string
   name: string
@@ -18,16 +20,16 @@ export type ItemUpdate = Partial<Omit<Item, "id">> & {
 export interface Column {
   id: string
   name: string
-  startTime: string
-  endTime: string
+  startTime: Time
+  endTime: Time
   position: number // order of columns
   date: string // ISO date string (YYYY-MM-DD) for multi-day support
   itemIds: string[] // array of item IDs in this column
 }
 
 export interface ItemTimes {
-  startTime: string
-  endTime: string
+  startTime: Time
+  endTime: Time
 }
 
 export interface AppState {

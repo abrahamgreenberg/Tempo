@@ -28,6 +28,7 @@ function ItemWithTimes({
   // Subscribe only to this specific item's times (pre-calculated in store)
   const { startTime, endTime } = useBoardStore(selectItemTimesData(itemId))
   const item = useBoardStore((state) => state.items[itemId])
+  const column = useBoardStore((state) => state.columns[columnId])
 
   if (!item) return null
 
@@ -41,6 +42,7 @@ function ItemWithTimes({
       endTime={endTime}
       onEdit={onEdit}
       onDelete={onDelete}
+      columnEndTime={column.endTime}
     />
   )
 }

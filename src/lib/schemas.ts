@@ -1,4 +1,11 @@
 import { z } from "zod"
+import { Time } from "./utils"
+
+// Zod validator for Time - accepts HH:MM strings and converts to Time
+export const TimeSchema = z
+  .string()
+  .regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, "Time must be in HH:MM format")
+  .transform((val) => Time.fromString(val))
 
 export const ItemSchema = z.object({
   id: z.string().min(1, "ID is required"),
@@ -28,18 +35,8 @@ export const ColumnSchema = z.object({
     .string()
     .min(1, "Name is required")
     .max(100, "Name must be less than 100 characters"),
-  startTime: z
-    .string()
-    .regex(
-      /^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/,
-      "Start time must be in HH:MM format"
-    ),
-  endTime: z
-    .string()
-    .regex(
-      /^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/,
-      "End time must be in HH:MM format"
-    ),
+  startTime: TimeSchema,
+  endTime: TimeSchema,
   position: z.number().int().nonnegative("Position must be non-negative"),
   date: z
     .string()
