@@ -183,33 +183,14 @@ Item
 
 ### In Progress
 
-Timeline-specific scheduling logic.
-
-The current drag-and-drop system works mechanically, but scheduling constraints still need to be implemented.
-
-Examples:
-
-- Prevent block overflow
-- Prevent impossible schedules
-- Detect time conflicts
-- Visual feedback during drag
-- Correct rendering of long-duration items
-
 ---
 
 # Immediate Tasks
 
-## 1. List Management
-
-- Currently lists need to be managed correctly and sorted by order, which should be managed in the program. there should also be limitations to make sure that there are no timeslot overlaps
-
-## 2. Better forms
-
-- I would like to have better forms to manage timeslots and items, with sliders and more visual info
-
 ## 3. Project Architecture
 
 - I would like to remove the current icon library in place for a different one
+- I want consistent naming for lists/timeblocks/columns
 
 ---
 
