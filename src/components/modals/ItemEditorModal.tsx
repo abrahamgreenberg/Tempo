@@ -5,7 +5,7 @@ import { ItemForm } from "@/components/forms/ItemForm"
 import { FormModal } from "@/components/modals/FormModal"
 import { useBoardStore } from "@/stores/useBoardStore"
 import type { ItemDraft } from "@/lib/schemas"
-import type { Column, Item, ItemUpdate, NewItem } from "@/types/domain"
+import type { Column, Item } from "@/types/domain"
 
 interface ItemEditorModalProps {
   isOpen: boolean
@@ -26,21 +26,18 @@ export function ItemEditorModal({
   const updateItem = useBoardStore((state) => state.updateItem)
   const formId = "item-editor-form"
 
-  const editingItem = useMemo(
-    () => {
-      if (!editingItemId) {
-        return undefined
-      }
+  const editingItem = useMemo(() => {
+    if (!editingItemId) {
+      return undefined
+    }
 
-      const item = items[editingItemId]
-      if (!item) {
-        return undefined
-      }
+    const item = items[editingItemId]
+    if (!item) {
+      return undefined
+    }
 
-      return withDerivedPlacement(item, columns) ?? item
-    },
-    [columns, editingItemId, items]
-  )
+    return withDerivedPlacement(item, columns) ?? item
+  }, [columns, editingItemId, items])
 
   const handleSaveItem = (data: ItemDraft) => {
     if (editingItemId) {

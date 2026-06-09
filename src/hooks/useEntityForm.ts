@@ -3,12 +3,14 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { useEffect, useMemo, useRef } from "react"
 import { z } from "zod"
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 interface UseEntityFormProps<T extends z.ZodType<any, any>> {
   schema: T
   initialData?: Partial<z.infer<T>>
   defaultValues: z.infer<T>
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function useEntityForm<T extends z.ZodType<any, any>>({
   schema,
   initialData,
@@ -20,6 +22,7 @@ export function useEntityForm<T extends z.ZodType<any, any>>({
   )
 
   const form = useForm<z.infer<T>>({
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     resolver: zodResolver(schema) as any,
     defaultValues,
   })

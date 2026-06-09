@@ -60,25 +60,30 @@ export function App() {
       </Button>
       <section className="grid w-full max-w-6xl grid-cols-3 gap-5 rounded-lg border border-border/70 bg-background/95 p-5 shadow-lg sm:p-8">
         <DragDropProvider onDragOver={handleDragOver}>
-          {Object.entries(columns).map(([columnId, column]) => (
-            <Column
-              key={columnId}
-              id={columnId}
-              column={column}
-              onEdit={listModal.open}
-            >
-              {column.itemIds.map((itemId, index) => (
-                <ItemWithTimes
-                  key={itemId}
-                  itemId={itemId}
-                  index={index}
-                  columnId={columnId}
-                  onEdit={itemModal.open}
-                  onDelete={deleteItem}
-                />
-              ))}
-            </Column>
-          ))}
+          {Object.entries(columns)
+            .sort(
+              ([, a], [, b]) =>
+                a.startTime.toMinutes() - b.startTime.toMinutes()
+            )
+            .map(([columnId, column]) => (
+              <Column
+                key={columnId}
+                id={columnId}
+                column={column}
+                onEdit={listModal.open}
+              >
+                {column.itemIds.map((itemId, index) => (
+                  <ItemWithTimes
+                    key={itemId}
+                    itemId={itemId}
+                    index={index}
+                    columnId={columnId}
+                    onEdit={itemModal.open}
+                    onDelete={deleteItem}
+                  />
+                ))}
+              </Column>
+            ))}
         </DragDropProvider>
       </section>
 

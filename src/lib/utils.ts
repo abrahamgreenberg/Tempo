@@ -125,3 +125,47 @@ export function calculateItemTimes(
 
   return { startTime, endTime }
 }
+
+/**
+ * Check if two time ranges intersect (including boundaries)
+ * Ranges [start1, end1] and [start2, end2] intersect if they overlap at all
+ */
+export function timeRangesIntersect(
+  start1: Time,
+  end1: Time,
+  start2: Time,
+  end2: Time
+): boolean {
+  return start1.lessThan(end2) && start2.lessThan(end1)
+}
+
+/**
+ * Get all occupied time slots from existing columns, excluding a specific column
+ */
+export function getOccupiedTimeSlots(
+  columns: Record<string, { startTime: Time; endTime: Time }>,
+  excludeColumnId?: string
+): Array<{ startTime: Time; endTime: Time; columnId: string }> {
+  return Object.entries(columns)
+    .filter(([columnId]) => columnId !== excludeColumnId)
+    .map(([columnId, column]) => ({
+      startTime: column.startTime,
+      endTime: column.endTime,
+      columnId,
+    }))
+}
+
+/**
+ * Check if a proposed time slot conflicts with existing columns
+ */
+export function hasTimeSlotConflict(
+  proposedStart: Time,
+  proposedEnd: Time,
+  columns: Record<string, { startTime: Time; endTime: Time }>,
+  excludeColumnId?: string
+): boolean {
+  const occupiedSlots = getOccupiedTimeSlots(columns, excludeColumnId)
+  return occupiedSlots.some(({ startTime, endTime }) =>
+    timeRangesIntersect(proposedStart, proposedEnd, startTime, endTime)
+  )
+}

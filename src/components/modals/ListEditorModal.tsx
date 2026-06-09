@@ -85,6 +85,8 @@ export function ListEditorModal({
         formId={formId}
         initialData={editingColumn}
         onSubmit={handleSaveColumn}
+        columns={columns}
+        editingColumnId={editingColumnId}
       />
     </FormModal>
   )
