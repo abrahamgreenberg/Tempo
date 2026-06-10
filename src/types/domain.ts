@@ -36,4 +36,5 @@ export interface AppState {
   columns: Record<string, Column>
   items: Record<string, Item>
   itemTimes: Record<string, ItemTimes> // Pre-calculated times: itemId -> {startTime, endTime}
+  itemPlacements: Record<string, ItemPlacement> // Index for O(1) placement lookups: itemId -> {listId, position}
 }

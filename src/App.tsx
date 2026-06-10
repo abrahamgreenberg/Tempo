@@ -48,7 +48,8 @@ function ItemWithTimes({
 }
 
 export function App() {
-  const { columns, items, deleteItem, handleDragOver } = useBoardData()
+  const { columns, items, deleteItem, handleDragOver, handleDragEnd } =
+    useBoardData()
 
   const itemModal = useModal<string>()
   const listModal = useModal<string>()
@@ -59,7 +60,7 @@ export function App() {
         + New List
       </Button>
       <section className="grid w-full max-w-6xl grid-cols-3 gap-5 rounded-lg border border-border/70 bg-background/95 p-5 shadow-lg sm:p-8">
-        <DragDropProvider onDragOver={handleDragOver}>
+        <DragDropProvider onDragOver={handleDragOver} onDragEnd={handleDragEnd}>
           {Object.entries(columns)
             .sort(
               ([, a], [, b]) =>

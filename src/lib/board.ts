@@ -8,18 +8,32 @@ export interface ApiItemPayload {
   position: number
 }
 
-type BoardSnapshot = Pick<AppState, "columns" | "items">
+type BoardSnapshot = Pick<AppState, "columns" | "items" | "itemPlacements">
 
+/**
+ * Find item placement using O(1) index lookup
+ * Falls back to O(n) scan if placement not found in index
+ */
 export function findItemPlacement(
-  columns: Record<string, Column>,
-  itemId: string
+  itemPlacements: Record<string, ItemPlacement>,
+  itemId: string,
+  columns?: Record<string, Column>
 ): ItemPlacement | null {
-  for (const column of Object.values(columns)) {
-    const position = column.itemIds.indexOf(itemId)
-    if (position !== -1) {
-      return {
-        listId: column.id,
-        position,
+  // Try O(1) lookup first
+  const placement = itemPlacements[itemId]
+  if (placement) {
+    return placement
+  }
+
+  // Fallback to O(n) scan if no index (legacy/backup)
+  if (columns) {
+    for (const column of Object.values(columns)) {
+      const position = column.itemIds.indexOf(itemId)
+      if (position !== -1) {
+        return {
+          listId: column.id,
+          position,
+        }
       }
     }
   }
@@ -29,7 +43,7 @@ export function findItemPlacement(
 
 export function toApiItemPayload(
   items: Record<string, Item>,
-  columns: Record<string, Column>,
+  itemPlacements: Record<string, ItemPlacement>,
   itemId: string
 ): ApiItemPayload | null {
   const item = items[itemId]
@@ -37,7 +51,7 @@ export function toApiItemPayload(
     return null
   }
 
-  const placement = findItemPlacement(columns, itemId)
+  const placement = findItemPlacement(itemPlacements, itemId)
   if (!placement) {
     return null
   }
@@ -77,9 +91,9 @@ export function toApiItemPayloads({
 
 export function withDerivedPlacement(
   item: Item,
-  columns: Record<string, Column>
+  itemPlacements: Record<string, ItemPlacement>
 ): (Item & ItemPlacement) | null {
-  const placement = findItemPlacement(columns, item.id)
+  const placement = findItemPlacement(itemPlacements, item.id)
   if (!placement) {
     return null
   }

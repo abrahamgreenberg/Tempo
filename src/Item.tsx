@@ -56,7 +56,7 @@ export const Item = memo(function Item({
     group: column,
   })
 
-  const isOverColumnEnd = endTime.greaterThan(columnEndTime)
+  const isOverColumnEnd = endTime.greaterThan(columnEndTime) && !isDragging
   const style =
     "cursor-grab active:cursor-grabbing" +
     (isOverColumnEnd ? " border border-red-500" : "")

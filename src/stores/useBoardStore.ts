@@ -9,58 +9,26 @@ import {
   updateItemInBoard,
   createColumnItemsMap,
 } from "@/lib/board-state"
-import { calculateItemTimes, Time } from "@/lib/utils"
-import type {
-  AppState,
-  Column,
-  ItemUpdate,
-  NewItem,
-  ItemTimes,
-} from "@/types/domain"
+import {
+  calculateAllItemTimes,
+  recalculateColumnItemTimes,
+} from "@/lib/scheduling"
+import { Time } from "@/lib/utils"
+import type { AppState, Column, ItemUpdate, NewItem } from "@/types/domain"
 
 /**
- * Calculate times for items in a specific column
- * This is the core logic used by both calculateAllItemTimes and recalculateColumnItemTimes
+ * Build itemPlacements index from columns
  */
-function calculateColumnItemTimes(
-  state: AppState,
-  columnId: string
-): Record<string, ItemTimes> {
-  const column = state.columns[columnId]
-  if (!column) return {}
-
-  const columnTimes: Record<string, ItemTimes> = {}
-
-  column.itemIds.forEach((itemId, index) => {
-    const item = state.items[itemId]
-    if (item) {
-      const precedingItemsDuration = column.itemIds
-        .slice(0, index)
-        .reduce((sum, id) => sum + (state.items[id]?.durationMinutes || 0), 0)
-
-      columnTimes[itemId] = calculateItemTimes(
-        column.startTime,
-        item.durationMinutes,
-        precedingItemsDuration
-      )
-    }
+function buildItemPlacements(
+  columns: Record<string, Column>
+): Record<string, { listId: string; position: number }> {
+  const placements: Record<string, { listId: string; position: number }> = {}
+  Object.entries(columns).forEach(([columnId, column]) => {
+    column.itemIds.forEach((itemId, index) => {
+      placements[itemId] = { listId: columnId, position: index }
+    })
   })
-
-  return columnTimes
-}
-
-/**
- * Calculate all item times for the current state
- * Uses the shared column calculation logic
- */
-function calculateAllItemTimes(state: AppState): Record<string, ItemTimes> {
-  const itemTimes: Record<string, ItemTimes> = {}
-
-  Object.keys(state.columns).forEach((columnId) => {
-    Object.assign(itemTimes, calculateColumnItemTimes(state, columnId))
-  })
-
-  return itemTimes
+  return placements
 }
 
 const baseInitialState = {
@@ -115,6 +83,7 @@ const baseInitialState = {
 const initialState: AppState = {
   ...baseInitialState,
   itemTimes: calculateAllItemTimes(baseInitialState as unknown as AppState),
+  itemPlacements: buildItemPlacements(baseInitialState.columns),
 }
 
 interface BoardStore extends AppState {
@@ -126,42 +95,19 @@ interface BoardStore extends AppState {
   updateColumn: (id: string, updates: Partial<Column>) => void
   deleteColumn: (id: string) => void
   handleDragOver: (event: Parameters<typeof move>[1]) => void
+  handleDragEnd: () => void
   recalculateColumnTimes: (columnId: string) => void
 }
 
 /**
- * Find which column contains an item
+ * Find which column contains an item - now O(1) with itemPlacements index
  */
 function findColumnContainingItem(
   state: AppState,
   itemId: string
 ): string | null {
-  for (const [columnId, column] of Object.entries(state.columns)) {
-    if (column.itemIds.includes(itemId)) {
-      return columnId
-    }
-  }
-  return null
-}
-
-/**
- * Recalculate times for specific columns only (not all columns)
- * More efficient than recalculating everything
- */
-function recalculateColumnItemTimes(
-  state: AppState,
-  columnIds: string[]
-): AppState {
-  const newItemTimes = { ...state.itemTimes }
-
-  columnIds.forEach((columnId) => {
-    Object.assign(newItemTimes, calculateColumnItemTimes(state, columnId))
-  })
-
-  return {
-    ...state,
-    itemTimes: newItemTimes,
-  }
+  const placement = state.itemPlacements[itemId]
+  return placement ? placement.listId : null
 }
 
 export const useBoardStore = create<BoardStore>()(
@@ -212,6 +158,7 @@ export const useBoardStore = create<BoardStore>()(
           [id]: { ...column, id, itemIds: [] },
         },
         itemTimes: state.itemTimes, // No times to recalculate for empty column
+        itemPlacements: state.itemPlacements, // No placements to update
       })),
 
     updateColumn: (id, updates) =>
@@ -221,7 +168,26 @@ export const useBoardStore = create<BoardStore>()(
         return recalculateColumnItemTimes(newState, [id])
       }),
 
-    deleteColumn: (id) => set((state) => deleteColumnFromBoard(state, id)),
+    deleteColumn: (id) =>
+      set((state) => {
+        const columnToDelete = state.columns[id]
+        if (!columnToDelete) return state
+
+        const hadItems = columnToDelete.itemIds.length > 0
+        const remainingColumnIds = Object.keys(state.columns).filter(
+          (cId) => cId !== id
+        )
+
+        const newState = deleteColumnFromBoard(state, id)
+
+        // If items were moved to another column, recalculate times
+        if (hadItems && remainingColumnIds.length > 0) {
+          const targetColumnId = remainingColumnIds[0]
+          return recalculateColumnItemTimes(newState, [targetColumnId])
+        }
+
+        return newState
+      }),
 
     handleDragOver: (event) =>
       set((state) => {
@@ -248,7 +214,6 @@ export const useBoardStore = create<BoardStore>()(
 
         // Apply the move by updating columns to match result
         const newColumns = { ...state.columns }
-        const changedColumns: string[] = []
 
         Object.entries(result as Record<string, string[]>).forEach(
           ([columnId, newItemIds]) => {
@@ -258,18 +223,38 @@ export const useBoardStore = create<BoardStore>()(
                 ...newColumns[columnId],
                 itemIds: newItemIds,
               }
-              changedColumns.push(columnId)
             }
           }
         )
 
-        const newState: AppState = {
+        // Update columns only - do NOT recalculate times or placements during drag
+        // This prevents expensive recalculations on every drag-over event
+        return {
           ...state,
           columns: newColumns,
         }
+      }),
 
-        // Recalculate times only for changed columns
-        return recalculateColumnItemTimes(newState, changedColumns)
+    handleDragEnd: () =>
+      set((state) => {
+        // Rebuild placements for all columns
+        const newPlacements: Record<
+          string,
+          { listId: string; position: number }
+        > = {}
+        Object.entries(state.columns).forEach(([columnId, column]) => {
+          column.itemIds.forEach((itemId, index) => {
+            newPlacements[itemId] = { listId: columnId, position: index }
+          })
+        })
+
+        // Recalculate times for all items after drag completes
+        const newState: AppState = {
+          ...state,
+          itemPlacements: newPlacements,
+        }
+
+        return recalculateColumnItemTimes(newState, Object.keys(state.columns))
       }),
 
     recalculateColumnTimes: (columnId: string) =>
@@ -292,6 +277,7 @@ export function useBoardData() {
   const items = useBoardStore((state) => state.items)
   const deleteItem = useBoardStore((state) => state.deleteItem)
   const handleDragOver = useBoardStore((state) => state.handleDragOver)
+  const handleDragEnd = useBoardStore((state) => state.handleDragEnd)
 
-  return { columns, items, deleteItem, handleDragOver }
+  return { columns, items, deleteItem, handleDragOver, handleDragEnd }
 }

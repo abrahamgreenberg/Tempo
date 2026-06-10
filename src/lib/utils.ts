@@ -113,20 +113,6 @@ export class Time {
 }
 
 /**
- * Calculate item's start and end times based on column start time and preceding item durations
- */
-export function calculateItemTimes(
-  columnStartTime: Time,
-  durationMinutes: number,
-  precedingItemsDuration: number
-): { startTime: Time; endTime: Time } {
-  const startTime = columnStartTime.addMinutes(precedingItemsDuration)
-  const endTime = startTime.addMinutes(durationMinutes)
-
-  return { startTime, endTime }
-}
-
-/**
  * Check if two time ranges intersect (including boundaries)
  * Ranges [start1, end1] and [start2, end2] intersect if they overlap at all
  */
