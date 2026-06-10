@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useState, useEffect, useRef } from "react"
 import { Input } from "@/components/ui/input"
 import { z } from "zod"
 import { ColumnInputSchema, type ColumnInput } from "@/lib/schemas"
@@ -48,6 +48,25 @@ export function ListForm({
   const [endTime, setEndTime] = useState<Time>(
     getTimeFromData(initialData?.endTime)
   )
+
+  // Track the initial data ID to only reset when switching items
+  const initialDataIdRef = useRef<string | undefined>(
+    initialData && "id" in initialData ? (initialData.id as string) : undefined
+  )
+
+  useEffect(() => {
+    const currentId =
+      initialData && "id" in initialData
+        ? (initialData.id as string)
+        : undefined
+
+    // Only reset if we're switching to a different item or opening a new form
+    if (currentId !== initialDataIdRef.current) {
+      initialDataIdRef.current = currentId
+      setStartTime(getTimeFromData(initialData?.startTime))
+      setEndTime(getTimeFromData(initialData?.endTime))
+    }
+  }, [initialData])
 
   const {
     register,

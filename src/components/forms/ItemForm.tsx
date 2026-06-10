@@ -11,6 +11,7 @@ import type { Column, Item } from "@/types/domain"
 import { FormField } from "./FormField.tsx"
 import { useEntityForm } from "@/hooks/useEntityForm"
 import { Input } from "../ui/input"
+import { Slider } from "../ui/slider"
 
 type ItemFormData = Partial<Item> & { listId?: string }
 
@@ -59,14 +60,40 @@ export function ItemForm({
         label="Duration (minutes)"
         error={errors.durationMinutes?.message}
       >
-        <Input
-          id="duration"
-          type="number"
-          placeholder="30"
-          step={5}
-          aria-invalid={errors.durationMinutes ? true : undefined}
-          {...register("durationMinutes", { valueAsNumber: true })}
-        />
+        <div className="space-y-3">
+          <Controller
+            control={control}
+            name="durationMinutes"
+            render={({ field }) => (
+              <div className="space-y-2">
+                <div className="flex justify-between text-sm text-muted-foreground">
+                  <span>15 min</span>
+                  <span className="font-medium text-foreground">
+                    {field.value} min
+                  </span>
+                  <span>120 min</span>
+                </div>
+                <Slider
+                  value={[Math.min(field.value, 120)]}
+                  onValueChange={(value) => field.onChange(value)}
+                  min={15}
+                  max={120}
+                  step={5}
+                  aria-invalid={errors.durationMinutes ? true : undefined}
+                />
+                <Input
+                  id="duration"
+                  type="number"
+                  placeholder="30"
+                  step={5}
+                  value={field.value}
+                  onChange={(e) => field.onChange(e.target.valueAsNumber || 15)}
+                  aria-invalid={errors.durationMinutes ? true : undefined}
+                />
+              </div>
+            )}
+          />
+        </div>
       </FormField>
 
       <FormField htmlFor="list" label="List" error={errors.listId?.message}>
