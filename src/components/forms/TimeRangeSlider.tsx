@@ -20,13 +20,6 @@ const SLIDER_MAX = 1440 // 12:00 AM (midnight) in minutes
 const SLIDER_STEP = 15 // 15 minute increments
 
 /**
- * Convert minutes to Time object
- */
-function minutesToTime(minutes: number): Time {
-  return Time.fromMinutes(Math.max(SLIDER_MIN, Math.min(SLIDER_MAX, minutes)))
-}
-
-/**
  * Get occupancy info for visual feedback
  */
 function getOccupancySegments(
@@ -61,8 +54,8 @@ export function TimeRangeSlider({
     if (!Array.isArray(values)) return
 
     const [newStart, newEnd] = values
-    const newStartTime = minutesToTime(newStart)
-    const newEndTime = minutesToTime(newEnd)
+    const newStartTime = Time.fromMinutes(newStart)
+    const newEndTime = Time.fromMinutes(newEnd)
 
     // Check for conflicts with other columns
     const conflict = occupancySegments.some((segment) =>
