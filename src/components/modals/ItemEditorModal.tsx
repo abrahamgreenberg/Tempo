@@ -13,6 +13,7 @@ interface ItemEditorModalProps {
   columns: Record<string, Column>
   items: Record<string, Item>
   onClose: () => void
+  initialData?: { listId?: string }
 }
 
 export function ItemEditorModal({
@@ -21,6 +22,7 @@ export function ItemEditorModal({
   columns,
   items,
   onClose,
+  initialData,
 }: ItemEditorModalProps) {
   const addItem = useBoardStore((state) => state.addItem)
   const updateItem = useBoardStore((state) => state.updateItem)
@@ -28,7 +30,7 @@ export function ItemEditorModal({
 
   const editingItem = useMemo(() => {
     if (!editingItemId) {
-      return undefined
+      return initialData
     }
 
     const item = items[editingItemId]
@@ -37,7 +39,7 @@ export function ItemEditorModal({
     }
 
     return withDerivedPlacement(item, columns) ?? item
-  }, [columns, editingItemId, items])
+  }, [columns, editingItemId, items, initialData])
 
   const handleSaveItem = (data: ItemDraft) => {
     if (editingItemId) {

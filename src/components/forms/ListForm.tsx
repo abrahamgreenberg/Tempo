@@ -18,15 +18,12 @@ interface ListFormProps {
   editingColumnId?: string | null
 }
 
-// Schema for form validation - only name and date, time handled separately
+// Schema for form validation - only name, time handled separately, date set automatically
 const FormValidationSchema = z.object({
   name: z
     .string()
     .min(1, "Name is required")
     .max(100, "Name must be less than 100 characters"),
-  date: z
-    .string()
-    .regex(/^\d{4}-\d{2}-\d{2}$/, "Date must be in YYYY-MM-DD format"),
 })
 
 export function ListForm({
@@ -76,11 +73,9 @@ export function ListForm({
     schema: FormValidationSchema,
     initialData: {
       name: initialData?.name,
-      date: initialData?.date,
     },
     defaultValues: {
       name: "",
-      date: new Date().toISOString().split("T")[0],
     } as never,
   })
 
@@ -91,7 +86,7 @@ export function ListForm({
       name: data.name,
       startTime: startTime.toString(),
       endTime: endTime.toString(),
-      date: data.date,
+      date: new Date().toISOString().split("T")[0],
     }
 
     try {
@@ -116,15 +111,6 @@ export function ListForm({
           placeholder="e.g., Morning, Afternoon"
           aria-invalid={errors.name ? true : undefined}
           {...register("name")}
-        />
-      </FormField>
-
-      <FormField htmlFor="date" label="Date" error={errors.date?.message}>
-        <Input
-          id="date"
-          type="date"
-          aria-invalid={errors.date ? true : undefined}
-          {...register("date")}
         />
       </FormField>
 

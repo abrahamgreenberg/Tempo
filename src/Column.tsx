@@ -10,11 +10,13 @@ export const Column = ({
   id,
   column,
   onEdit,
+  onAddItem,
 }: {
   children: React.ReactNode
   id: string
   column: ColumnType
   onEdit: (id: string) => void
+  onAddItem?: (columnId: string) => void
 }) => {
   const { ref } = useDroppable({
     id,
@@ -25,10 +27,10 @@ export const Column = ({
 
   return (
     <div
-      className="flex h-full w-full flex-col gap-4 rounded-lg border border-border/70 bg-background/95 p-4 shadow-lg"
+      className="flex min-h-full w-full flex-col gap-4 rounded-lg border border-border/70 bg-background/95 p-4 shadow-lg"
       ref={ref}
     >
-      <div className="mb-2">
+      <div className="mb-2 flex-shrink-0">
         <div className="flex items-start justify-between gap-2">
           <h2 className="text-lg font-semibold">{column.name}</h2>
           <Button
@@ -47,7 +49,20 @@ export const Column = ({
           {column.startTime.toString()} - {column.endTime.toString()}
         </p>
       </div>
-      <div className="flex flex-col gap-3">{children}</div>
+      <div className="flex min-h-0 flex-1 flex-col gap-3 pr-1">{children}</div>
+      {onAddItem && (
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={(e) => {
+            e.stopPropagation()
+            onAddItem(id)
+          }}
+          className="mt-auto w-full"
+        >
+          + Add Item
+        </Button>
+      )}
     </div>
   )
 }

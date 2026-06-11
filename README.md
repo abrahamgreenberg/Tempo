@@ -187,16 +187,16 @@ Item
 
 # Immediate Tasks
 
-## 3. Project Architecture
-
-- I would like to remove the current icon library in place for a different one
-- I want consistent naming for lists/timeblocks/columns
-
----
-
-## 4. Final Render View
+## 1. Final Render View
 
 - We still need to implement the final render of the project once the user has built their plan for the day
+
+## 2. Bugfixes
+
+- I would like each column to have its own individual scrollbar instead of a glboal scrollbar in the edit page
+  2
+
+- If you edit an item right now it defaults to the first column, and not it's actual column
 
 ---
 
