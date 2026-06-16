@@ -187,6 +187,14 @@ Item
 
 # Immediate Tasks
 
+## 0. Major Refactor
+
+Currently refactoring to REDUX for better scalability of the app:
+
+- Fix drag and drop not working into empty columns
+- Re-implement crud for data
+- BUG: If we move tasks around the times do not update
+
 ## 1. Final Render View
 
 - We still need to implement the final render of the project once the user has built their plan for the day
@@ -195,8 +203,6 @@ Item
 
 - I would like each column to have its own individual scrollbar instead of a glboal scrollbar in the edit page
   2
-
-- If you edit an item right now it defaults to the first column, and not it's actual column
 
 ---
 
