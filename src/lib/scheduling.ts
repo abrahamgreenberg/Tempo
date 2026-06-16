@@ -1,5 +1,5 @@
 import { Time } from "@/lib/utils"
-import type { AppState, ItemTimes } from "@/types/domain"
+import type { AppState, ItemLink, ItemTimes } from "@/types/domain"
 
 /**
  * Calculate item's start and end times based on column start time and preceding item durations
@@ -16,34 +16,43 @@ export function calculateItemTimes(
 }
 
 /**
- * Calculate times for items in a specific column
- * This is the core logic used by both calculateAllItemTimes and recalculateColumnItemTimes
+ * Get ordered links for a column
  */
+function getColumnLinks(itemLinks: Record<string, ItemLink>, columnId: string) {
+  return Object.values(itemLinks)
+    .filter((link) => link.columnId === columnId)
+    .sort((a, b) => a.position - b.position)
+}
+
 export function calculateColumnItemTimes(
   state: AppState,
-  columnId: string
+  columnIds: string[]
 ): Record<string, ItemTimes> {
-  const column = state.columns[columnId]
-  if (!column) return {}
+  const result: Record<string, ItemTimes> = {}
 
-  const columnTimes: Record<string, ItemTimes> = {}
+  for (const columnId of columnIds) {
+    const column = state.columns[columnId]
+    if (!column) continue
 
-  column.itemIds.forEach((itemId, index) => {
-    const item = state.items[itemId]
-    if (item) {
-      const precedingItemsDuration = column.itemIds
-        .slice(0, index)
-        .reduce((sum, id) => sum + (state.items[id]?.durationMinutes || 0), 0)
+    const links = getColumnLinks(state.itemLinks, columnId)
 
-      columnTimes[itemId] = calculateItemTimes(
+    let elapsedMinutes = 0
+
+    for (const link of links) {
+      const item = state.items[link.itemId]
+      if (!item) continue
+
+      result[link.itemId] = calculateItemTimes(
         column.startTime,
         item.durationMinutes,
-        precedingItemsDuration
+        elapsedMinutes
       )
-    }
-  })
 
-  return columnTimes
+      elapsedMinutes += item.durationMinutes
+    }
+  }
+
+  return result
 }
 
 /**
@@ -56,7 +65,7 @@ export function calculateAllItemTimes(
   const itemTimes: Record<string, ItemTimes> = {}
 
   Object.keys(state.columns).forEach((columnId) => {
-    Object.assign(itemTimes, calculateColumnItemTimes(state, columnId))
+    Object.assign(itemTimes, calculateColumnItemTimes(state, [columnId]))
   })
 
   return itemTimes
@@ -73,7 +82,7 @@ export function recalculateColumnItemTimes(
   const newItemTimes = { ...state.itemTimes }
 
   columnIds.forEach((columnId) => {
-    Object.assign(newItemTimes, calculateColumnItemTimes(state, columnId))
+    Object.assign(newItemTimes, calculateColumnItemTimes(state, [columnId]))
   })
 
   return {

@@ -1,41 +1,56 @@
-import type { AppState, Column, Item, ItemUpdate } from "@/types/domain"
+import type {
+  AppState,
+  Column,
+  Item,
+  ItemLink,
+  ItemUpdate,
+} from "@/types/domain"
 
-export function createColumnItemsMap(columns: Record<string, Column>) {
-  return Object.fromEntries(
-    Object.entries(columns).map(([columnId, column]) => [
-      columnId,
-      column.itemIds,
-    ])
-  ) as Record<string, string[]>
+export function getItemsInColumn(
+  itemLinks: Record<string, ItemLink>,
+  columnId: string
+) {
+  return Object.values(itemLinks)
+    .filter((link) => link.columnId === columnId)
+    .sort((a, b) => a.position - b.position)
+}
+
+export function getNextPosition(
+  itemLinks: Record<string, ItemLink>,
+  columnId: string
+) {
+  return getItemsInColumn(itemLinks, columnId).length
 }
 
 export function addItemToBoard(
   state: AppState,
-  payload: { item: Item; listId: string }
+  payload: {
+    item: Item
+    listId: string
+  }
 ): AppState {
   const { item, listId } = payload
-  const column = state.columns[listId]
 
-  if (!column) return state
-
-  const newPosition = column.itemIds.length
+  if (!state.columns[listId]) {
+    return state
+  }
 
   return {
     ...state,
+
     items: {
       ...state.items,
       [item.id]: item,
     },
-    columns: {
-      ...state.columns,
-      [listId]: {
-        ...column,
-        itemIds: [...column.itemIds, item.id],
+
+    itemLinks: {
+      ...state.itemLinks,
+
+      [item.id]: {
+        itemId: item.id,
+        columnId: listId,
+        position: getNextPosition(state.itemLinks, listId),
       },
-    },
-    itemPlacements: {
-      ...state.itemPlacements,
-      [item.id]: { listId, position: newPosition },
     },
   }
 }
@@ -45,95 +60,69 @@ export function updateItemInBoard(
   itemId: string,
   updates: ItemUpdate
 ): AppState {
-  const currentItem = state.items[itemId]
-  const currentPlacement = state.itemPlacements[itemId]
-  if (!currentItem || !currentPlacement) {
+  const item = state.items[itemId]
+  const link = state.itemLinks[itemId]
+
+  if (!item || !link) {
     return state
   }
 
   const { listId, ...itemChanges } = updates
 
-  // If moving to a different column
-  if (listId && listId !== currentPlacement.listId) {
-    const newColumns = {
-      ...state.columns,
-      [currentPlacement.listId]: {
-        ...state.columns[currentPlacement.listId],
-        itemIds: state.columns[currentPlacement.listId].itemIds.filter(
-          (id) => id !== itemId
-        ),
-      },
-      [listId]: {
-        ...state.columns[listId],
-        itemIds: [...state.columns[listId].itemIds, itemId],
-      },
-    }
-
-    // Rebuild placements for both affected columns
-    const newPlacements = { ...state.itemPlacements }
-    newColumns[currentPlacement.listId].itemIds.forEach((id, index) => {
-      newPlacements[id] = { listId: currentPlacement.listId, position: index }
-    })
-    newColumns[listId].itemIds.forEach((id, index) => {
-      newPlacements[id] = { listId, position: index }
-    })
-
-    return {
-      ...state,
-      items: {
-        ...state.items,
-        [itemId]: { ...currentItem, ...itemChanges },
-      },
-      columns: newColumns,
-      itemPlacements: newPlacements,
-    }
-  }
-
-  // Just updating item properties, no move
-  return {
+  const nextState: AppState = {
     ...state,
+
     items: {
       ...state.items,
-      [itemId]: { ...currentItem, ...itemChanges },
+
+      [itemId]: {
+        ...item,
+        ...itemChanges,
+      },
+    },
+  }
+
+  if (!listId || listId === link.columnId) {
+    return nextState
+  }
+
+  return {
+    ...nextState,
+
+    itemLinks: {
+      ...nextState.itemLinks,
+
+      [itemId]: {
+        ...link,
+
+        columnId: listId,
+
+        position: getNextPosition(nextState.itemLinks, listId),
+      },
     },
   }
 }
 
 export function deleteItemFromBoard(state: AppState, itemId: string): AppState {
-  const placement = state.itemPlacements[itemId]
-  if (!placement) return state
+  if (!state.items[itemId]) {
+    return state
+  }
 
-  const remainingItems = { ...state.items }
-  delete remainingItems[itemId]
+  const items = { ...state.items }
+  delete items[itemId]
 
-  const columns = Object.entries(state.columns).reduce(
-    (accumulator, [columnId, column]) => ({
-      ...accumulator,
-      [columnId]: {
-        ...column,
-        itemIds: column.itemIds.filter((id) => id !== itemId),
-      },
-    }),
-    {} as Record<string, Column>
-  )
+  const itemLinks = { ...state.itemLinks }
+  delete itemLinks[itemId]
 
-  // Rebuild placements for the affected column and remove deleted item
-  const newPlacements = { ...state.itemPlacements }
-  delete newPlacements[itemId]
-  columns[placement.listId].itemIds.forEach((id, index) => {
-    newPlacements[id] = { listId: placement.listId, position: index }
-  })
-
-  // Clean up itemTimes for deleted item
-  const newItemTimes = { ...state.itemTimes }
-  delete newItemTimes[itemId]
+  const itemTimes = { ...state.itemTimes }
+  delete itemTimes[itemId]
 
   return {
     ...state,
-    items: remainingItems,
-    columns,
-    itemPlacements: newPlacements,
-    itemTimes: newItemTimes,
+
+    items,
+    itemLinks,
+    itemTimes,
   }
 }
 
@@ -143,12 +132,21 @@ export function updateColumnInBoard(
   updates: Partial<Column>
 ): AppState {
   const currentColumn = state.columns[columnId]
-  if (!currentColumn) return state
+
+  if (!currentColumn) {
+    return state
+  }
+
   return {
     ...state,
+
     columns: {
       ...state.columns,
-      [columnId]: { ...currentColumn, ...updates },
+
+      [columnId]: {
+        ...currentColumn,
+        ...updates,
+      },
     },
   }
 }
@@ -157,54 +155,62 @@ export function deleteColumnFromBoard(
   state: AppState,
   columnId: string
 ): AppState {
-  const columnToDelete = state.columns[columnId]
-  if (!columnToDelete) {
+  if (!state.columns[columnId]) {
     return state
   }
 
-  const remainingColumns = { ...state.columns }
-  delete remainingColumns[columnId]
+  const columns = { ...state.columns }
+  delete columns[columnId]
 
-  const newPlacements = { ...state.itemPlacements }
-  const newItemTimes = { ...state.itemTimes }
+  const remainingColumnIds = Object.keys(columns)
 
-  // If no columns remain, clean up all items, placements, and times
-  const remainingColumnIds = Object.keys(remainingColumns)
+  const itemLinks = {
+    ...state.itemLinks,
+  }
+
+  const itemTimes = {
+    ...state.itemTimes,
+  }
+
   if (remainingColumnIds.length === 0) {
-    columnToDelete.itemIds.forEach((itemId) => {
-      delete newPlacements[itemId]
-      delete newItemTimes[itemId]
+    Object.values(itemLinks).forEach((link) => {
+      if (link.columnId === columnId) {
+        delete itemLinks[link.itemId]
+        delete itemTimes[link.itemId]
+      }
     })
 
     return {
       ...state,
-      columns: remainingColumns,
-      itemPlacements: newPlacements,
-      itemTimes: newItemTimes,
+      columns,
+      itemLinks,
+      itemTimes,
     }
   }
 
-  // Move items to first remaining column
-  if (columnToDelete.itemIds.length > 0) {
-    const targetColumnId = remainingColumnIds[0]
-    const targetColumn = remainingColumns[targetColumnId]
-    const newItemIds = [...targetColumn.itemIds, ...columnToDelete.itemIds]
+  const targetColumnId = remainingColumnIds[0]
 
-    remainingColumns[targetColumnId] = {
-      ...targetColumn,
-      itemIds: newItemIds,
+  const movedItems = Object.values(itemLinks)
+    .filter((link) => link.columnId === columnId)
+    .sort((a, b) => a.position - b.position)
+
+  const startPosition = getNextPosition(itemLinks, targetColumnId)
+
+  movedItems.forEach((link, index) => {
+    itemLinks[link.itemId] = {
+      ...link,
+
+      columnId: targetColumnId,
+
+      position: startPosition + index,
     }
-
-    // Rebuild placements for target column (times will be recalculated by caller)
-    newItemIds.forEach((itemId, index) => {
-      newPlacements[itemId] = { listId: targetColumnId, position: index }
-    })
-  }
+  })
 
   return {
     ...state,
-    columns: remainingColumns,
-    itemPlacements: newPlacements,
-    itemTimes: newItemTimes,
+
+    columns,
+    itemLinks,
+    itemTimes,
   }
 }

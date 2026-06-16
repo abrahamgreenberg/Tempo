@@ -6,25 +6,28 @@ export interface Item {
   durationMinutes: number
 }
 
-export interface ItemPlacement {
-  listId: string
-  position: number
-}
-
-export type NewItem = Omit<Item, "id"> & Pick<ItemPlacement, "listId">
-
-export type ItemUpdate = Partial<Omit<Item, "id">> & {
-  listId?: string
-}
-
 export interface Column {
   id: string
   name: string
+
   startTime: Time
   endTime: Time
-  position: number // order of columns
-  date: string // ISO date string (YYYY-MM-DD) for multi-day support
-  itemIds: string[] // array of item IDs in this column
+
+  position: number
+  date: string
+}
+
+/**
+ * Join table between Items and Columns.
+ *
+ * This is the source of truth for:
+ * - which column an item belongs to
+ * - ordering inside that column
+ */
+export interface ItemLink {
+  itemId: string
+  columnId: string
+  position: number
 }
 
 export interface ItemTimes {
@@ -32,9 +35,39 @@ export interface ItemTimes {
   endTime: Time
 }
 
+export interface NewItem {
+  name: string
+  durationMinutes: number
+  listId: string
+}
+
+export interface ItemUpdate {
+  name?: string
+  durationMinutes?: number
+
+  /**
+   * Move item to another column.
+   */
+  listId?: string
+}
+
 export interface AppState {
+  /**
+   * Persisted entities
+   */
   columns: Record<string, Column>
+
   items: Record<string, Item>
-  itemTimes: Record<string, ItemTimes> // Pre-calculated times: itemId -> {startTime, endTime}
-  itemPlacements: Record<string, ItemPlacement> // Index for O(1) placement lookups: itemId -> {listId, position}
+
+  /**
+   * Relational join table
+   *
+   * itemId -> link
+   */
+  itemLinks: Record<string, ItemLink>
+
+  /**
+   * Derived scheduling cache
+   */
+  itemTimes: Record<string, ItemTimes>
 }

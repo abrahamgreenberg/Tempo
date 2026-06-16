@@ -1,9 +1,8 @@
 import { createId } from "@paralleldrive/cuid2"
-import { useMemo } from "react"
-import { withDerivedPlacement } from "@/lib/board"
+
 import { ItemForm } from "@/components/forms/ItemForm"
 import { FormModal } from "@/components/modals/FormModal"
-import { useBoardStore } from "@/stores/useBoardStore"
+import { selectItemWithLink, useBoardStore } from "@/stores/useBoardStore"
 import type { ItemDraft } from "@/lib/schemas"
 import type { Column, Item } from "@/types/domain"
 
@@ -15,31 +14,30 @@ interface ItemEditorModalProps {
   onClose: () => void
   initialData?: { listId?: string }
 }
-
 export function ItemEditorModal({
   isOpen,
   editingItemId,
-  columns,
-  items,
   onClose,
   initialData,
+  columns,
 }: ItemEditorModalProps) {
-  const addItem = useBoardStore((state) => state.addItem)
-  const updateItem = useBoardStore((state) => state.updateItem)
+  const addItem = useBoardStore((s) => s.addItem)
+  const updateItem = useBoardStore((s) => s.updateItem)
+
   const formId = "item-editor-form"
 
-  const editingItem = useMemo(() => {
-    if (!editingItemId) {
-      return initialData
-    }
+  const editingItem = useBoardStore((state) => {
+    if (!editingItemId) return initialData ?? undefined
 
-    const item = items[editingItemId]
-    if (!item) {
-      return undefined
-    }
+    const item = selectItemWithLink(editingItemId)(state)
+    if (!item) return undefined
 
-    return withDerivedPlacement(item, columns) ?? item
-  }, [columns, editingItemId, items, initialData])
+    return {
+      name: item.name,
+      durationMinutes: item.durationMinutes,
+      listId: item.listId,
+    }
+  })
 
   const handleSaveItem = (data: ItemDraft) => {
     if (editingItemId) {
@@ -60,6 +58,7 @@ export function ItemEditorModal({
       },
       createId()
     )
+
     onClose()
   }
 
@@ -75,9 +74,9 @@ export function ItemEditorModal({
       onClose={onClose}
     >
       <ItemForm
+        columns={columns}
         formId={formId}
         initialData={editingItem}
-        columns={columns}
         onSubmit={handleSaveItem}
       />
     </FormModal>

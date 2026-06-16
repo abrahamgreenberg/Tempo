@@ -51,8 +51,14 @@ function ItemWithTimes({
 
 export function EditPage() {
   const navigate = useNavigate()
-  const { columns, items, deleteItem, handleDragOver, handleDragEnd } =
-    useBoardData()
+  const {
+    columns,
+    items,
+    orderedItems,
+    deleteItem,
+    handleDragOver,
+    handleDragEnd,
+  } = useBoardData()
 
   const itemModal = useModal<string>()
   const listModal = useModal<string>()
@@ -116,7 +122,7 @@ export function EditPage() {
                       onEdit={listModal.open}
                       onAddItem={handleAddItem}
                     >
-                      {column.itemIds.map((itemId, index) => (
+                      {(orderedItems[columnId] ?? []).map((itemId, index) => (
                         <ItemWithTimes
                           key={itemId}
                           itemId={itemId}
@@ -134,7 +140,7 @@ export function EditPage() {
         </section>
       </div>
 
-      <ItemEditorModal
+      {/* <ItemEditorModal
         isOpen={itemModal.isOpen}
         editingItemId={itemModal.editingId}
         columns={columns}
@@ -152,7 +158,7 @@ export function EditPage() {
         editingColumnId={listModal.editingId}
         columns={columns}
         onClose={listModal.close}
-      />
+      /> */}
     </div>
   )
 }
