@@ -208,6 +208,8 @@ TODO:
   - add final polish to our dnd functionality
   - center preiview around mouse
   - fix preview with dark mode
+  - individual scroll bars for columns
+  - update README Documentation
 
 ## 1. Final Render View
 
