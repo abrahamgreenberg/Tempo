@@ -29,6 +29,7 @@ export const Column = ({
     <div
       className="flex min-h-full w-full flex-col gap-4 rounded-lg border border-border/70 bg-background/95 p-4 shadow-lg"
       ref={ref}
+      data-column-id={id}
     >
       <div className="mb-2 flex-shrink-0">
         <div className="flex items-start justify-between gap-2">

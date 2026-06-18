@@ -191,9 +191,23 @@ Item
 
 Currently refactoring to REDUX for better scalability of the app:
 
+DONE:
+
 - Fix drag and drop not working into empty columns
 - Re-implement crud for data
 - BUG: If we move tasks around the times do not update
+- Removed dnd-kit entriely as it was causing problems with redux
+
+TODO:
+
+- Re-implement edit/create forms in redux
+- uninstall zustand and dnd-kit entirely
+- remove indexes from this project, and stick with order
+- make drag boundary entire window, not just box
+  - fix mouse movement
+  - add final polish to our dnd functionality
+  - center preiview around mouse
+  - fix preview with dark mode
 
 ## 1. Final Render View
 

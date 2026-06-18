@@ -1,5 +1,5 @@
 import { memo } from "react"
-import { useSortable } from "@dnd-kit/react/sortable"
+// import { useSortable } from "@dnd-kit/react/sortable"
 import {
   Card,
   CardHeader,
@@ -17,7 +17,7 @@ import {
   CheckmarkSquare02Icon,
   AlertIcon,
 } from "@hugeicons/core-free-icons"
-import type { Item as ItemType } from "@/types/domain"
+import type { Item as ItemType } from "@/store/boardTypes"
 import type { Time } from "@/lib/utils"
 import { Badge } from "@/components/ui/badge"
 import { ButtonGroup } from "@/components/ui/button-group"
@@ -26,49 +26,41 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
+import { useDragManager } from "./useDragManager"
 
 export const Item = memo(function Item({
   id,
-  index,
-  column,
   item,
   startTime,
   endTime,
   onEdit,
   onDelete,
   columnEndTime,
+  drag,
 }: {
   id: string
-  index: number
-  column: string
   item: ItemType
   startTime: Time
   endTime: Time
   columnEndTime: Time
   onEdit: (id: string) => void
   onDelete: (id: string) => void
+  drag: ReturnType<typeof useDragManager>
 }) {
-  const { ref, isDragging } = useSortable({
-    id,
-    index,
-    type: "item",
-    accept: "item",
-    group: column,
-  })
-
-  const isOverColumnEnd = endTime.greaterThan(columnEndTime) && !isDragging
+  const isOverColumnEnd = endTime.greaterThan(columnEndTime) // && !isDragging
   const style =
     "cursor-grab active:cursor-grabbing" +
     (isOverColumnEnd ? " border border-red-500" : "")
-
   return (
     <Card
-      ref={ref}
-      className={style}
-      data-dragging={isDragging}
-      style={{
-        opacity: isDragging ? 0.5 : 1,
-      }}
+      // ref={ref}
+      // className={style}
+      // data-dragging={isDragging}
+      // style={{
+      //   opacity: isDragging ? 0.5 : 1,
+      // }}
+      data-item-id={id}
+      {...drag.bindItem(id)}
     >
       <CardHeader className="pb-3">
         <CardTitle className="text-base">{item.name}</CardTitle>

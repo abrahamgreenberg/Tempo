@@ -58,34 +58,38 @@ const initialState: BoardState = {
     item1: {
       itemId: "item1",
       columnId: "col1",
-      position: 0,
+      rank: 1000,
     },
     item2: {
       itemId: "item2",
       columnId: "col2",
-      position: 0,
+      rank: 1000,
     },
     item3: {
       itemId: "item3",
       columnId: "col2",
-      position: 1,
+      rank: 2000,
     },
     item4: {
       itemId: "item4",
       columnId: "col3",
-      position: 0,
+      rank: 1000,
     },
   },
 }
 
-/**
- * Compute next position in a column
- */
-function getNextPosition(
-  links: BoardState["itemLinks"],
-  columnId: string
-): number {
-  return Object.values(links).filter((l) => l.columnId === columnId).length
+function getDefaultRank(links: BoardState["itemLinks"], columnId: string) {
+  const values = Object.values(links)
+    .filter((l) => l.columnId === columnId)
+    .map((l) => l.rank)
+
+  if (values.length === 0) return 1000
+
+  return Math.max(...values) + 1000
+}
+
+function getMiddleRank(a: number, b: number) {
+  return (a + b) / 2
 }
 
 export const boardSlice = createSlice({
@@ -106,22 +110,18 @@ export const boardSlice = createSlice({
       state.itemLinks[item.id] = {
         itemId: item.id,
         columnId,
-        position: getNextPosition(state.itemLinks, columnId),
+        rank: getDefaultRank(state.itemLinks, columnId),
       }
     },
 
     /**
      * Update item fields and optionally move column
      */
-    updateItem: (
-      state,
-      action: PayloadAction<{ id: string; updates: ItemUpdate }>
-    ) => {
+    updateItem: (state, action) => {
       const { id, updates } = action.payload
 
       const item = state.items[id]
       const link = state.itemLinks[id]
-
       if (!item || !link) return
 
       // update item fields
@@ -131,14 +131,30 @@ export const boardSlice = createSlice({
         durationMinutes: updates.durationMinutes ?? item.durationMinutes,
       }
 
-      // handle move between columns
-      if (updates.columnId && updates.columnId !== link.columnId) {
-        state.itemLinks[id] = {
-          itemId: id,
-          columnId: updates.columnId,
-          position: getNextPosition(state.itemLinks, updates.columnId),
-        }
+      const toColumn = updates.columnId ?? link.columnId
+      const toIndex = updates.toIndex
+
+      const columnLinks = Object.values(state.itemLinks)
+        .filter((l) => l.columnId === toColumn)
+        .sort((a, b) => a.rank - b.rank)
+
+      const prev = columnLinks[toIndex - 1]
+      const next = columnLinks[toIndex]
+
+      let newRank: number
+
+      if (!prev && !next) {
+        newRank = 1000
+      } else if (!prev) {
+        newRank = next.rank - 1000
+      } else if (!next) {
+        newRank = prev.rank + 1000
+      } else {
+        newRank = getMiddleRank(prev.rank, next.rank)
       }
+
+      link.columnId = toColumn
+      link.rank = newRank
     },
 
     /**
@@ -177,9 +193,6 @@ export const boardSlice = createSlice({
       }
     },
 
-    /**
-     * Delete column + optionally move or remove items
-     */
     deleteColumn: (state, action: PayloadAction<string>) => {
       const columnId = action.payload
 
@@ -190,7 +203,7 @@ export const boardSlice = createSlice({
 
       const remainingColumns = Object.keys(state.columns)
 
-      // if no columns left → remove everything in that column
+      // remove everything if last column
       if (remainingColumns.length === 0) {
         for (const [itemId, link] of Object.entries(state.itemLinks)) {
           if (link.columnId === columnId) {
@@ -201,36 +214,14 @@ export const boardSlice = createSlice({
         return
       }
 
-      // move items to first remaining column
       const targetColumnId = remainingColumns[0]
 
-      for (const [itemId, link] of Object.entries(state.itemLinks)) {
+      for (const [_, link] of Object.entries(state.itemLinks)) {
         if (link.columnId === columnId) {
-          state.itemLinks[itemId] = {
-            itemId,
-            columnId: targetColumnId,
-            position: getNextPosition(state.itemLinks, targetColumnId),
-          }
+          link.columnId = targetColumnId
+          link.rank = getDefaultRank(state.itemLinks, targetColumnId)
         }
       }
-    },
-
-    /**
-     * Drag reorder inside a column
-     */
-    reorderColumn: (
-      state,
-      action: PayloadAction<{ columnId: string; itemIds: string[] }>
-    ) => {
-      const { columnId, itemIds } = action.payload
-
-      itemIds.forEach((itemId, index) => {
-        const link = state.itemLinks[itemId]
-        if (!link) return
-
-        link.columnId = columnId
-        link.position = index
-      })
     },
 
     /**
@@ -249,7 +240,6 @@ export const {
   addColumn,
   updateColumn,
   deleteColumn,
-  reorderColumn,
   setState,
 } = boardSlice.actions
 

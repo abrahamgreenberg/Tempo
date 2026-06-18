@@ -19,7 +19,7 @@ export interface Column {
 export interface ItemLink {
   itemId: string
   columnId: string
-  position: number
+  rank: number
 }
 
 export interface ItemUpdate {
