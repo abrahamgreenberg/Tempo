@@ -48,17 +48,9 @@ export const Item = memo(function Item({
   drag: ReturnType<typeof useDragManager>
 }) {
   const isOverColumnEnd = endTime.greaterThan(columnEndTime) // && !isDragging
-  const style =
-    "cursor-grab active:cursor-grabbing" +
-    (isOverColumnEnd ? " border border-red-500" : "")
   return (
     <Card
-      // ref={ref}
-      // className={style}
-      // data-dragging={isDragging}
-      // style={{
-      //   opacity: isDragging ? 0.5 : 1,
-      // }}
+      className="cursor-grab active:cursor-grabbing"
       data-item-id={id}
       {...drag.bindItem(id)}
     >
@@ -82,6 +74,7 @@ export const Item = memo(function Item({
             <Button
               size="sm"
               variant="secondary"
+              onPointerDown={(e) => e.stopPropagation()}
               onClick={(e) => {
                 e.stopPropagation()
                 onEdit(id)
@@ -93,6 +86,7 @@ export const Item = memo(function Item({
             <Button
               size="sm"
               variant="secondary"
+              onPointerDown={(e) => e.stopPropagation()}
               onClick={(e) => {
                 e.stopPropagation()
                 onDelete(id)

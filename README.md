@@ -202,6 +202,7 @@ TODO:
 
 - Re-implement edit/create forms in redux
 - uninstall zustand and dnd-kit entirely
+- get better icon pack
 - remove indexes from this project, and stick with order
 - make drag boundary entire window, not just box
   - fix mouse movement

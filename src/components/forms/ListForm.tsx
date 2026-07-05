@@ -1,109 +1,134 @@
-import { useState, useEffect, useRef } from "react"
-import { Input } from "@/components/ui/input"
+import { useEffect, useState } from "react"
 import { z } from "zod"
-import { ColumnInputSchema, type ColumnInput } from "@/lib/schemas"
-import type { Column } from "@/types/domain"
-import { FormField } from "./FormField.tsx"
+
+import { Input } from "@/components/ui/input"
+import { FormField } from "./FormField"
 import { TimeRangeSlider } from "./TimeRangeSlider"
 import { useEntityForm } from "@/hooks/useEntityForm"
 import { Time } from "@/lib/utils"
+import { useAppDispatch, useAppSelector } from "@/store/hooks"
+import { selectColumnById, selectColumns } from "@/store/boardSelectors"
+import { addColumn, updateColumn } from "@/store/boardSlice"
+import { ColumnSchema } from "@/store/boardTypes"
 
-type ListFormData = Partial<Column>
-
-interface ListFormProps {
-  initialData?: ListFormData
-  onSubmit: (data: ColumnInput) => void
-  formId?: string
-  columns?: Record<string, Column>
-  editingColumnId?: string | null
-}
-
-// Schema for form validation - only name, time handled separately, date set automatically
-const FormValidationSchema = z.object({
+const ListFormSchema = z.object({
   name: z
     .string()
-    .min(1, "Name is required")
+    .trim()
+    .min(1, "List name is required")
     .max(100, "Name must be less than 100 characters"),
 })
 
-export function ListForm({
-  initialData,
-  onSubmit,
-  formId = "list-form",
-  columns = {},
-  editingColumnId,
-}: ListFormProps) {
-  const getTimeFromData = (timeValue: unknown): Time => {
-    if (timeValue instanceof Time) return timeValue
-    if (typeof timeValue === "string") return Time.fromString(timeValue)
-    return new Time(9, 0)
+const ColumnSubmitSchema = ColumnSchema.refine(
+  (column) => column.endTime.greaterThan(column.startTime),
+  {
+    path: ["endTime"],
+    message: "End time must be after start time",
   }
+)
+
+type ListFormData = z.infer<typeof ListFormSchema>
+
+interface ListFormProps {
+  editingColumnId?: string
+  formId?: string
+  onComplete?: () => void
+}
+
+export function ListForm({
+  editingColumnId,
+  formId = "entity-form",
+  onComplete,
+}: ListFormProps) {
+  const dispatch = useAppDispatch()
+  const columns = useAppSelector(selectColumns)
+  const editingColumn = useAppSelector((state) =>
+    editingColumnId ? selectColumnById(editingColumnId)(state) : undefined
+  )
+
+  const getDefaultRange = () => ({
+    startTime: new Time(9, 0),
+    endTime: new Time(12, 0),
+  })
 
   const [startTime, setStartTime] = useState<Time>(
-    getTimeFromData(initialData?.startTime)
+    editingColumn?.startTime ?? getDefaultRange().startTime
   )
   const [endTime, setEndTime] = useState<Time>(
-    getTimeFromData(initialData?.endTime)
-  )
-
-  // Track the initial data ID to only reset when switching items
-  const initialDataIdRef = useRef<string | undefined>(
-    initialData && "id" in initialData ? (initialData.id as string) : undefined
+    editingColumn?.endTime ?? getDefaultRange().endTime
   )
 
   useEffect(() => {
-    const currentId =
-      initialData && "id" in initialData
-        ? (initialData.id as string)
-        : undefined
-
-    // Only reset if we're switching to a different item or opening a new form
-    if (currentId !== initialDataIdRef.current) {
-      initialDataIdRef.current = currentId
-      setStartTime(getTimeFromData(initialData?.startTime))
-      setEndTime(getTimeFromData(initialData?.endTime))
+    if (editingColumn) {
+      setStartTime(editingColumn.startTime)
+      setEndTime(editingColumn.endTime)
+      return
     }
-  }, [initialData])
+
+    const range = getDefaultRange()
+    setStartTime(range.startTime)
+    setEndTime(range.endTime)
+  }, [editingColumnId, editingColumn])
 
   const {
     register,
     handleSubmit,
+    setError,
     formState: { errors },
   } = useEntityForm({
-    schema: FormValidationSchema,
+    schema: ListFormSchema,
     initialData: {
-      name: initialData?.name,
+      name: editingColumn?.name ?? "",
     },
     defaultValues: {
       name: "",
-    } as never,
+    },
   })
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const handleFormSubmit = (data: any) => {
-    // Validate and parse the complete data through ColumnInputSchema
-    const dataWithStringTimes = {
-      name: data.name,
-      startTime: startTime.toString(),
-      endTime: endTime.toString(),
-      date: new Date().toISOString().split("T")[0],
+  const submit = (data: ListFormData) => {
+    const id = editingColumnId ?? `col-${crypto.randomUUID()}`
+
+    const payload = {
+      id,
+      name: data.name.trim(),
+      startTime,
+      endTime,
+      position: editingColumn?.position ?? Object.keys(columns).length,
+      date: editingColumn?.date ?? new Date().toISOString().split("T")[0],
     }
 
-    try {
-      const validatedData = ColumnInputSchema.parse(dataWithStringTimes)
-      onSubmit(validatedData)
-    } catch (error) {
-      console.error("Validation error:", error)
-      throw error
+    const parsed = ColumnSubmitSchema.safeParse(payload)
+    if (!parsed.success) {
+      const nameIssue = parsed.error.issues.find(
+        (issue) => issue.path[0] === "name"
+      )
+      if (nameIssue) {
+        setError("name", { type: "manual", message: nameIssue.message })
+      }
+      return
     }
+
+    if (editingColumnId) {
+      dispatch(
+        updateColumn({
+          id: editingColumnId,
+          updates: {
+            name: payload.name,
+            startTime: payload.startTime,
+            endTime: payload.endTime,
+            date: payload.date,
+          },
+        })
+      )
+    } else {
+      dispatch(addColumn(payload))
+    }
+
+    onComplete?.()
   }
 
   return (
-    <form
-      id={formId}
-      onSubmit={handleSubmit(handleFormSubmit)}
-      className="space-y-6"
-    >
+    <form id={formId} onSubmit={handleSubmit(submit)} className="space-y-6">
       <FormField htmlFor="name" label="List Name" error={errors.name?.message}>
         <Input
           id="name"
@@ -121,7 +146,7 @@ export function ListForm({
           onChangeStart={setStartTime}
           onChangeEnd={setEndTime}
           columns={columns}
-          excludeColumnId={editingColumnId || undefined}
+          excludeColumnId={editingColumnId}
         />
       </FormField>
     </form>

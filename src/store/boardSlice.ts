@@ -1,5 +1,5 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit"
-import type { BoardState, Item, ItemUpdate, Column } from "./boardTypes"
+import type { BoardState, Item, Column } from "./boardTypes"
 import { Time } from "@/lib/utils"
 
 //store/boardSlice.ts
@@ -134,12 +134,28 @@ export const boardSlice = createSlice({
       const toColumn = updates.columnId ?? link.columnId
       const toIndex = updates.toIndex
 
+      const columnChanged = toColumn !== link.columnId
+      const hasExplicitReorder = typeof toIndex === "number"
+
+      // If this update only edits item fields, keep placement untouched.
+      if (!columnChanged && !hasExplicitReorder) {
+        return
+      }
+
+      // If column changes from form edit without explicit drop index, append to end.
+      if (columnChanged && !hasExplicitReorder) {
+        link.columnId = toColumn
+        link.rank = getDefaultRank(state.itemLinks, toColumn)
+        return
+      }
+
       const columnLinks = Object.values(state.itemLinks)
-        .filter((l) => l.columnId === toColumn)
+        .filter((l) => l.columnId === toColumn && l.itemId !== id)
         .sort((a, b) => a.rank - b.rank)
 
-      const prev = columnLinks[toIndex - 1]
-      const next = columnLinks[toIndex]
+      const index = toIndex
+      const prev = columnLinks[index - 1]
+      const next = columnLinks[index]
 
       let newRank: number
 
@@ -216,7 +232,7 @@ export const boardSlice = createSlice({
 
       const targetColumnId = remainingColumns[0]
 
-      for (const [_, link] of Object.entries(state.itemLinks)) {
+      for (const [, link] of Object.entries(state.itemLinks)) {
         if (link.columnId === columnId) {
           link.columnId = targetColumnId
           link.rank = getDefaultRank(state.itemLinks, targetColumnId)

@@ -1,8 +1,13 @@
 // import { DragDropProvider, type DragEndEvent } from "@dnd-kit/react"
-import { useModal } from "@/hooks/useModal"
-import { useEffect, useState } from "react"
+import { useState } from "react"
 import Column from "../Column"
 import Item from "../Item"
+
+/* TODO:
+- FIX EDIT FORM
+- FIX ANY TYPE
+- THEN WE SHOULD BE GOLDEN
+ */
 
 import { Button } from "@/components/ui/button"
 import { useNavigate } from "react-router-dom"
@@ -14,12 +19,16 @@ import {
 import {
   selectColumns,
   selectLinks,
-  selectItemTimesById,
   selectAllItemTimes,
 } from "@/store/boardSelectors"
 
-import { deleteItem, updateItem } from "@/store/boardSlice"
+import { deleteColumn, deleteItem } from "@/store/boardSlice"
 import { useDragManager } from "@/useDragManager"
+import { useEntityFormModal } from "@/hooks/useEntityFormModal"
+import { EntityFormModal } from "@/components/modals/EntityFormModal"
+import { DeleteConfirmModal } from "@/components/modals/DeleteConfirmModal"
+import { ItemForm } from "@/components/forms/ItemForm"
+import { ListForm } from "@/components/forms/ListForm.tsx"
 
 // Helper component (subscribes per item)
 function ItemWithTimes({
@@ -55,28 +64,6 @@ function ItemWithTimes({
   )
 }
 
-// const itemModal = useModal<string>()
-// const listModal = useModal<string>()
-
-// const [preselectedColumnId, setPreselectedColumnId] = useState<
-//   string | undefined
-// >(undefined)
-
-// const handleAddItem = (columnId: string) => {
-//   setPreselectedColumnId(columnId)
-//   itemModal.open()
-// }
-
-// const handleEditItem = (itemId: string) => {
-//   setPreselectedColumnId(undefined)
-//   itemModal.open(itemId)
-// }
-
-// const handleCloseItemModal = () => {
-//   setPreselectedColumnId(undefined)
-//   itemModal.close()
-// }
-
 function ItemPreview({ itemId }: { itemId: string }) {
   const item = useSelector((state) => state.board.items[itemId])
   if (!item) return null
@@ -104,6 +91,10 @@ export function EditPage() {
   const itemLinks = useSelector(selectLinks)
 
   const drag = useDragManager()
+  const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null)
+
+  const listModal = useEntityFormModal<string>()
+  const itemModal = useEntityFormModal<string, { columnId: string }>()
 
   return (
     <div className="flex min-h-[100svh] w-full flex-col items-center justify-center gap-6 bg-muted/30 p-6 pb-24">
@@ -116,7 +107,7 @@ export function EditPage() {
               ← Home
             </Button>
 
-            <Button /* onClick={() => listModal.open()} */ variant="default">
+            <Button onClick={() => listModal.openCreate()} variant="default">
               + New List
             </Button>
 
@@ -127,7 +118,6 @@ export function EditPage() {
         </div>
 
         <section className="h-[70vh] w-full overflow-x-auto rounded-lg border border-border/70 bg-background/95 p-5 shadow-lg sm:p-8">
-          {/* <DragDropProvider onDragOver={() => {}} onDragEnd={handleDragEnd}> */}
           <div
             className="mx-auto flex h-full w-max gap-5"
             onPointerMove={drag.onPointerMove}
@@ -154,35 +144,30 @@ export function EditPage() {
                     <Column
                       id={columnId}
                       column={column}
-                      onEdit={/* listModal.open */ undefined}
-                      onAddItem={/* handleAddItem */ undefined}
+                      onEdit={(id) => listModal.openEdit(id)}
+                      onAddItem={(columnId) => {
+                        itemModal.openCreate({ columnId })
+                      }}
                     >
-                      {/* {itemsInColumn.length === 0 &&
-                        drag?.placeholder?.columnId === columnId && (
-                          <Placeholder />
-                        )} */}
+                      {itemsInColumn.map((link, index) => (
+                        <>
+                          {drag?.draggingId &&
+                            drag?.placeholder?.columnId === columnId &&
+                            drag?.placeholder.index === index && (
+                              <Placeholder />
+                            )}
 
-                      {itemsInColumn
-                        // .filter((link) => link.itemId !== drag?.draggingId)
-                        .map((link, index) => (
-                          <>
-                            {drag?.draggingId &&
-                              drag?.placeholder?.columnId === columnId &&
-                              drag?.placeholder.index === index && (
-                                <Placeholder />
-                              )}
-
-                            <ItemWithTimes
-                              key={link.itemId}
-                              itemId={link.itemId}
-                              columnId={columnId}
-                              index={index}
-                              drag={drag}
-                              // onEdit={/* handleEditItem */ undefined}
-                              onDelete={(id) => dispatch(deleteItem(id))}
-                            />
-                          </>
-                        ))}
+                          <ItemWithTimes
+                            key={link.itemId}
+                            itemId={link.itemId}
+                            columnId={columnId}
+                            index={index}
+                            drag={drag}
+                            onEdit={() => itemModal.openEdit(link.itemId)}
+                            onDelete={(id) => setPendingDeleteId(id)}
+                          />
+                        </>
+                      ))}
 
                       {drag?.placeholder?.columnId === columnId &&
                         drag?.placeholder.index === itemsInColumn.length && (
@@ -193,7 +178,6 @@ export function EditPage() {
                 )
               })}
           </div>
-          {/* </DragDropProvider> */}
         </section>
       </div>
 
@@ -213,28 +197,41 @@ export function EditPage() {
         </div>
       )}
 
-      {/* Forms temporarily disabled */}
-      {/*
-      <ItemEditorModal
-        isOpen={itemModal.isOpen}
-        editingItemId={itemModal.editingId}
-        columns={columns}
-        items={items}
-        onClose={handleCloseItemModal}
-        initialData={
-          !itemModal.editingId && preselectedColumnId
-            ? { listId: preselectedColumnId }
-            : undefined
-        }
+      <EntityFormModal
+        modal={listModal}
+        entityName="List"
+        onDelete={(id) => dispatch(deleteColumn(id))}
+        renderForm={({ editingId, onComplete }) => (
+          <ListForm
+            editingColumnId={editingId ?? undefined}
+            onComplete={onComplete}
+          />
+        )}
       />
 
-      <ListEditorModal
-        isOpen={listModal.isOpen}
-        editingColumnId={listModal.editingId}
-        columns={columns}
-        onClose={listModal.close}
+      <EntityFormModal
+        modal={itemModal}
+        entityName="Task"
+        onDelete={(id) => dispatch(deleteItem(id))}
+        renderForm={({ editingId, context, onComplete }) => (
+          <ItemForm
+            editingItemId={editingId ?? undefined}
+            initialColumnId={context?.columnId}
+            onComplete={onComplete}
+          />
+        )}
       />
-      */}
+
+      <DeleteConfirmModal
+        open={pendingDeleteId != null}
+        entityName="task"
+        onCancel={() => setPendingDeleteId(null)}
+        onConfirm={() => {
+          if (!pendingDeleteId) return
+          dispatch(deleteItem(pendingDeleteId))
+          setPendingDeleteId(null)
+        }}
+      />
     </div>
   )
 }

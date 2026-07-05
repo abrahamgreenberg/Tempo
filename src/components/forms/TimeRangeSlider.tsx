@@ -2,7 +2,7 @@ import { useState } from "react"
 import { Slider } from "@/components/ui/slider"
 import { Input } from "@/components/ui/input"
 import { Time, getOccupiedTimeSlots, timeRangesIntersect } from "@/lib/utils"
-import type { Column } from "@/types/domain"
+import type { Column } from "@/store/boardTypes"
 import { AlertIcon } from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
 

@@ -1,6 +1,6 @@
 import { useDroppable } from "@dnd-kit/react"
 import { CollisionPriority } from "@dnd-kit/abstract"
-import type { Column as ColumnType } from "@/types/domain"
+import type { Column as ColumnType } from "@/store/boardTypes"
 import { Button } from "@/components/ui/button"
 import { HugeiconsIcon } from "@hugeicons/react"
 import { Pencil } from "@hugeicons/core-free-icons"
