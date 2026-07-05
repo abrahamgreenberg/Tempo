@@ -214,6 +214,29 @@ TODO:
   - individual scroll bars for columns
   - update README Documentation
 
+[{
+"resource": "/",
+"owner": "eslint1",
+"code": {
+"value": "react-hooks/set-state-in-effect",
+"target": {
+"$mid": 1,
+"path": "/reference/eslint-plugin-react-hooks/lints/set-state-in-effect",
+"scheme": "https",
+"authority": "react.dev"
+}
+},
+"severity": 8,
+"message": "Error: Calling setState synchronously within an effect can trigger cascading renders\n\nEffects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:\n* Update external systems with the latest state from React.\n* Subscribe for updates from some external system, calling setState in a callback function when external state changes.\n\nCalling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).\n\n/:63:7\n 61 | useEffect(() => {\n 62 | if (editingColumn) {\n> 63 | setStartTime(editingColumn.startTime)\n | ^^^^^^^^^^^^ Avoid calling setState() directly within an effect\n 64 | setEndTime(editingColumn.endTime)\n 65 | return\n 66 | }",
+"source": "eslint",
+"startLineNumber": 63,
+"startColumn": 7,
+"endLineNumber": 63,
+"endColumn": 19,
+"modelVersionId": 3,
+"origin": "extHost1"
+}]
+
 ## 1. Final Render View
 
 - We still need to implement the final render of the project once the user has built their plan for the day
