@@ -93,7 +93,6 @@ export function ListForm({
       name: data.name.trim(),
       startTime,
       endTime,
-      position: editingColumn?.position ?? Object.keys(columns).length,
       date: editingColumn?.date ?? new Date().toISOString().split("T")[0],
     }
 

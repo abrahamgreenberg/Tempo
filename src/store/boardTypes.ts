@@ -38,7 +38,6 @@ export const ColumnSchema = z.object({
   name: z.string(),
   startTime: TimeSchema,
   endTime: TimeSchema,
-  position: z.number(),
   date: z.string(),
 })
 

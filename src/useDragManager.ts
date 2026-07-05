@@ -6,7 +6,7 @@ type DragState = {
   itemId: string
   fromColumn: string
   toColumn: string
-  toIndex: number
+  beforeItemId: string | null
 } | null
 
 export function useDragManager() {
@@ -19,7 +19,7 @@ export function useDragManager() {
   )
   const [placeholder, setPlaceholder] = useState<{
     columnId: string
-    index: number
+    beforeItemId: string | null
   } | null>(null)
 
   const [draggingId, setDraggingId] = useState<string | null>(null)
@@ -31,17 +31,19 @@ export function useDragManager() {
     return col?.getAttribute("data-column-id") ?? null
   }
 
-  const getInsertIndex = (columnId: string, y: number) => {
+  const getInsertBeforeItemId = (columnId: string, y: number) => {
     const items = Array.from(
       document.querySelectorAll(`[data-column-id="${columnId}"] [data-item-id]`)
     ) as HTMLElement[]
 
-    for (let i = 0; i < items.length; i++) {
-      const rect = items[i].getBoundingClientRect()
-      if (y < rect.top + rect.height / 2) return i
+    for (const item of items) {
+      const rect = item.getBoundingClientRect()
+      if (y < rect.top + rect.height / 2) {
+        return item.getAttribute("data-item-id")
+      }
     }
 
-    return items.length
+    return null
   }
 
   const onPointerDown = (itemId: string) => (e: React.PointerEvent) => {
@@ -54,7 +56,7 @@ export function useDragManager() {
       itemId,
       fromColumn: itemLinks[itemId].columnId,
       toColumn: itemLinks[itemId].columnId,
-      toIndex: itemLinks[itemId].rank,
+      beforeItemId: null,
     }
     ;(e.currentTarget as HTMLElement).setPointerCapture(e.pointerId)
   }
@@ -67,43 +69,59 @@ export function useDragManager() {
     const columnId = getColumnFromPoint(e.clientX, e.clientY)
     if (!columnId) return
 
-    const index = getInsertIndex(columnId, e.clientY)
+    const beforeItemId = getInsertBeforeItemId(columnId, e.clientY)
 
     dragState.current.toColumn = columnId
-    dragState.current.toIndex = index
+    dragState.current.beforeItemId = beforeItemId
 
     setPlaceholder({
       columnId,
-      index,
+      beforeItemId,
     })
   }
 
-  const onPointerUp = () => {
-    if (!dragState.current) return
-
+  const resetDragUI = () => {
     document.body.style.userSelect = ""
     document.body.style.cursor = ""
 
-    const { itemId, toColumn, toIndex } = dragState.current
+    dragState.current = null
+    setDraggingId(null)
+    setPreviewPos(null)
+    setPlaceholder(null)
+  }
+
+  const onPointerUp = () => {
+    if (!dragState.current) {
+      resetDragUI()
+      return
+    }
+
+    const { itemId, toColumn, beforeItemId } = dragState.current
 
     dispatch(
       updateItem({
         id: itemId,
         updates: {
           columnId: toColumn,
-          toIndex,
+          beforeItemId,
         },
       })
     )
 
-    dragState.current = null
-    setDraggingId(null)
+    resetDragUI()
+  }
+
+  const onPointerCancel = () => {
+    resetDragUI()
   }
 
   return {
     draggingId,
     bindItem: (id: string) => ({
       onPointerDown: onPointerDown(id),
+      onPointerUp,
+      onPointerCancel,
+      onLostPointerCapture: onPointerCancel,
     }),
     onPointerMove,
     onPointerUp,

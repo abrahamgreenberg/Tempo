@@ -40,7 +40,6 @@ function ItemWithTimes({
 }: {
   itemId: string
   columnId: string
-  index: number
   onEdit: (id: string) => void
   onDelete: (id: string) => void
   drag: ReturnType<typeof useDragManager>
@@ -149,11 +148,11 @@ export function EditPage() {
                         itemModal.openCreate({ columnId })
                       }}
                     >
-                      {itemsInColumn.map((link, index) => (
+                      {itemsInColumn.map((link) => (
                         <>
                           {drag?.draggingId &&
                             drag?.placeholder?.columnId === columnId &&
-                            drag?.placeholder.index === index && (
+                            drag?.placeholder.beforeItemId === link.itemId && (
                               <Placeholder />
                             )}
 
@@ -161,7 +160,6 @@ export function EditPage() {
                             key={link.itemId}
                             itemId={link.itemId}
                             columnId={columnId}
-                            index={index}
                             drag={drag}
                             onEdit={() => itemModal.openEdit(link.itemId)}
                             onDelete={(id) => setPendingDeleteId(id)}
@@ -169,8 +167,9 @@ export function EditPage() {
                         </>
                       ))}
 
-                      {drag?.placeholder?.columnId === columnId &&
-                        drag?.placeholder.index === itemsInColumn.length && (
+                      {drag?.draggingId &&
+                        drag?.placeholder?.columnId === columnId &&
+                        drag?.placeholder.beforeItemId == null && (
                           <Placeholder />
                         )}
                     </Column>

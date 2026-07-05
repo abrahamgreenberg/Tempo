@@ -1,5 +1,5 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit"
-import type { BoardState, Item, Column } from "./boardTypes"
+import type { BoardState, Item, Column, ItemUpdate } from "./boardTypes"
 import { Time } from "@/lib/utils"
 
 //store/boardSlice.ts
@@ -10,7 +10,6 @@ const initialState: BoardState = {
       name: "Morning",
       startTime: new Time(9, 0),
       endTime: new Time(12, 0),
-      position: 0,
       date: "2025-01-01",
     },
     col2: {
@@ -18,7 +17,6 @@ const initialState: BoardState = {
       name: "Afternoon",
       startTime: new Time(13, 0),
       endTime: new Time(17, 0),
-      position: 1,
       date: "2025-01-01",
     },
     col3: {
@@ -26,7 +24,6 @@ const initialState: BoardState = {
       name: "Evening",
       startTime: new Time(18, 0),
       endTime: new Time(22, 0),
-      position: 2,
       date: "2025-01-01",
     },
   },
@@ -117,7 +114,13 @@ export const boardSlice = createSlice({
     /**
      * Update item fields and optionally move column
      */
-    updateItem: (state, action) => {
+    updateItem: (
+      state,
+      action: PayloadAction<{
+        id: string
+        updates: ItemUpdate & { beforeItemId?: string | null }
+      }>
+    ) => {
       const { id, updates } = action.payload
 
       const item = state.items[id]
@@ -132,18 +135,21 @@ export const boardSlice = createSlice({
       }
 
       const toColumn = updates.columnId ?? link.columnId
-      const toIndex = updates.toIndex
+      const hasExplicitPlacement = Object.prototype.hasOwnProperty.call(
+        updates,
+        "beforeItemId"
+      )
+      const beforeItemId = updates.beforeItemId ?? null
 
       const columnChanged = toColumn !== link.columnId
-      const hasExplicitReorder = typeof toIndex === "number"
 
       // If this update only edits item fields, keep placement untouched.
-      if (!columnChanged && !hasExplicitReorder) {
+      if (!columnChanged && !hasExplicitPlacement) {
         return
       }
 
       // If column changes from form edit without explicit drop index, append to end.
-      if (columnChanged && !hasExplicitReorder) {
+      if (columnChanged && !hasExplicitPlacement) {
         link.columnId = toColumn
         link.rank = getDefaultRank(state.itemLinks, toColumn)
         return
@@ -153,16 +159,25 @@ export const boardSlice = createSlice({
         .filter((l) => l.columnId === toColumn && l.itemId !== id)
         .sort((a, b) => a.rank - b.rank)
 
-      const index = toIndex
-      const prev = columnLinks[index - 1]
-      const next = columnLinks[index]
+      const nextIndex = beforeItemId
+        ? columnLinks.findIndex((l) => l.itemId === beforeItemId)
+        : -1
+
+      const prev =
+        beforeItemId == null || nextIndex === -1
+          ? columnLinks[columnLinks.length - 1]
+          : columnLinks[nextIndex - 1]
+      const next =
+        beforeItemId == null || nextIndex === -1
+          ? undefined
+          : columnLinks[nextIndex]
 
       let newRank: number
 
       if (!prev && !next) {
         newRank = 1000
       } else if (!prev) {
-        newRank = next.rank - 1000
+        newRank = (next?.rank ?? 1000) - 1000
       } else if (!next) {
         newRank = prev.rank + 1000
       } else {
