@@ -198,11 +198,13 @@ DONE:
 - BUG: If we move tasks around the times do not update
 - Removed dnd-kit entriely as it was causing problems with redux
 
-TODO:
-
 - Re-implement edit/create forms in redux
 - uninstall zustand and dnd-kit entirely
+
+TODO:
+
 - get better icon pack
+
 - remove indexes from this project, and stick with order
 - make drag boundary entire window, not just box
   - fix mouse movement
